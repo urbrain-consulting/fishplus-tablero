@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fishplus — Visita Terreno</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --navy:    #254C76;
+  --mid:     #38698A;
+  --teal:    #52B1C8;
+  --silver:  #B0B8BE;
+  --soft:    #E8F4F8;
+  --dark:    #0d1a27;
+  --darker:  #091422;
+  --card:    #122035;
+  --border:  #1e3550;
+  --text:    #c8dcea;
+  --muted:   #7a9ab5;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --ok:      #34d399;
+  --mono:    'DM Mono', monospace;
+  --sans:    'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--sans);
+  background: var(--darker);
+  color: var(--text);
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--navy);
+  border-bottom: 2px solid var(--teal);
+  padding: 12px 16px 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.topbar-logo {
+  width: 32px; height: 32px;
+  background: var(--teal);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--navy);
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+.topbar-text { flex: 1; }
+.topbar-title { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; }
+.topbar-sub { font-size: 11px; color: var(--teal); font-family: var(--mono); }
+.topbar-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--silver);
+  background: rgba(255,255,255,0.08);
+  padding: 3px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* ── NAV TABS ── */
+.nav {
+  display: flex;
+  overflow-x: auto;
+  background: var(--dark);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 58px;
+  z-index: 99;
+  scrollbar-width: none;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav-tab {
+  flex-shrink: 0;
+  padding: 11px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.18s;
+  letter-spacing: 0.2px;
+}
+.nav-tab.active {
+  color: var(--teal);
+  border-bottom-color: var(--teal);
+  background: rgba(82,177,200,0.06);
+}
+
+/* ── PANELS ── */
+.panel { display: none; padding: 16px; padding-bottom: 40px; }
+.panel.active { display: block; }
+
+/* ── SECTION TITLE ── */
+.sec {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--teal);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 20px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.sec:first-child { margin-top: 0; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.card-body { font-size: 13px; color: var(--text); line-height: 1.55; }
+
+/* ── NOTA BOXES ── */
+.nota {
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-left: 4px solid var(--teal);
+  background: rgba(82,177,200,0.07);
+}
+.nota.warn { border-left-color: var(--warn); background: rgba(245,158,11,0.07); }
+.nota.danger { border-left-color: var(--danger); background: rgba(239,68,68,0.07); }
+.nota.ok { border-left-color: var(--ok); background: rgba(52,211,153,0.07); }
+.nota-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--teal);
+  display: block;
+  margin-bottom: 5px;
+}
+.nota.warn .nota-label { color: var(--warn); }
+.nota.danger .nota-label { color: var(--danger); }
+.nota.ok .nota-label { color: var(--ok); }
+.nota p { font-size: 13px; color: var(--text); line-height: 1.55; }
+
+/* ── VERBATIM ── */
+.verbatim {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--teal);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #e8f4ff;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+/* ── LIST ── */
+.list { list-style: none; }
+.list li {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+  align-items: flex-start;
+}
+.list li:last-child { border-bottom: none; }
+.list li::before {
+  content: "›";
+  color: var(--teal);
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+  line-height: 1.3;
+}
+
+/* ── CHECKLIST ── */
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.check-item:last-child { border-bottom: none; }
+.check-box {
+  width: 22px; height: 22px;
+  border: 2px solid var(--teal);
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  margin-top: 1px;
+}
+.check-item.done .check-box {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+.check-item.done .check-box::after {
+  content: "✓";
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+}
+.check-text {
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+  line-height: 1.5;
+}
+.check-item.done .check-text {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+/* ── ERP TABLE ── */
+.erp-grid { display: flex; flex-direction: column; gap: 10px; }
+.erp-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.erp-header {
+  background: var(--navy);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.erp-name { font-size: 14px; font-weight: 700; color: #fff; }
+.erp-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.tag-hi { background: rgba(239,68,68,0.2); color: #fca5a5; }
+.tag-med { background: rgba(245,158,11,0.2); color: #fcd34d; }
+.tag-lo { background: rgba(52,211,153,0.2); color: #6ee7b7; }
+.erp-body { padding: 12px 14px; }
+.erp-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; }
+.erp-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--teal);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  width: 70px;
+  padding-top: 2px;
+}
+.erp-val { font-size: 12px; color: var(--text); line-height: 1.5; }
+
+/* ── PHASE CARDS ── */
+.phase-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.phase-num {
+  width: 32px; height: 32px;
+  background: var(--navy);
+  border: 2px solid var(--teal);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.phase-content { flex: 1; }
+.phase-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+.phase-time { font-family: var(--mono); font-size: 10px; color: var(--teal); margin-bottom: 6px; }
+.phase-body { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+/* ── SEÑAL ROWS ── */
+.signal-row {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.signal-row:last-child { border-bottom: none; }
+.signal-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+.signal-text { flex: 1; font-size: 13px; color: var(--text); line-height: 1.5; }
+.signal-text strong { color: #fff; display: block; margin-bottom: 2px; font-size: 13px; }
+
+/* ── ESCENARIOS ── */
+.escenario {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.escenario-if {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--warn);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.escenario-q {
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+.escenario-a {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.55;
+  padding-left: 10px;
+  border-left: 2px solid var(--teal);
+}
+
+/* ── WA BOX ── */
+.wa-box {
+  background: #0d2a1a;
+  border: 1px solid #1a5a30;
+  border-left: 4px solid var(--ok);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 13px;
+  color: #d0f0d8;
+  line-height: 1.65;
+}
+.wa-box p { margin-bottom: 10px; }
+.wa-box p:last-child { margin-bottom: 0; }
+.wa-placeholder { color: var(--muted); font-style: italic; }
+
+/* ── LOTES TABLE ── */
+.lotes-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.lotes-table th {
+  background: var(--navy);
+  color: #fff;
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+}
+.lotes-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+.lotes-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.lotes-table tr:last-child td { border-bottom: none; }
+
+/* ── VOLUME BARS ── */
+.vol-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.vol-label { font-size: 12px; color: var(--muted); width: 90px; flex-shrink: 0; }
+.vol-bar-wrap { flex: 1; background: var(--border); border-radius: 4px; height: 20px; overflow: hidden; }
+.vol-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; color: var(--navy); font-family: var(--mono); }
+.vol-bar.c { background: var(--teal); width: 45%; }
+.vol-bar.m { background: #52C8A0; width: 65%; }
+.vol-bar.h { background: #52C8A0; width: 90%; opacity: 0.8; }
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: 30px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ── GLOSARIO ── */
+.glos-search-wrap {
+  position: relative;
+  margin-bottom: 8px;
+}
+.glos-search {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--teal);
+  border-radius: 8px;
+  padding: 11px 36px 11px 14px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: #fff;
+  outline: none;
+}
+.glos-search::placeholder { color: var(--muted); }
+.glos-clear {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.glos-contador {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+  margin-bottom: 10px;
+}
+.glos-cat {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--teal);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 18px 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+.glos-cat:first-of-type { margin-top: 8px; }
+.glos-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 13px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.glos-item:active { border-color: var(--teal); }
+.glos-term {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2px;
+}
+.glos-full {
+  font-size: 11px;
+  color: var(--teal);
+  font-family: var(--mono);
+  margin-bottom: 6px;
+}
+.glos-def {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.55;
+  display: none;
+}
+.glos-item.open .glos-def { display: block; }
+.glos-item.open { border-color: var(--teal); }
+.glos-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--silver);
+  font-size: 14px;
+}
+mark.hl {
+  background: rgba(82,177,200,0.3);
+  color: #fff;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* ── NOTAS ── */
+.nota-textarea {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 13px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  resize: none;
+  min-height: 90px;
+  margin-bottom: 4px;
+  line-height: 1.6;
+  transition: border-color 0.15s;
+}
+.nota-textarea.nota-tall { min-height: 130px; }
+.nota-textarea:focus { border-color: var(--teal); }
+.nota-textarea::placeholder { color: var(--muted); }
+.btn-limpiar {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  padding: 11px;
+  background: transparent;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  color: var(--danger);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-limpiar:active { background: rgba(239,68,68,0.1); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">UB</div>
+  <div class="topbar-text">
+    <div class="topbar-title">Fishplus — Visita en Terreno</div>
+    <div class="topbar-sub">UB-FP-REF-002 · Uso interno URBrain</div>
+  </div>
+  <div class="topbar-badge">OFFLINE</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-tab active" onclick="show('mentalidad',this)">Mentalidad</div>
+  <div class="nav-tab" onclick="show('fases',this)">Fases</div>
+  <div class="nav-tab" onclick="show('preguntas',this)">Preguntas</div>
+  <div class="nav-tab" onclick="show('lotes',this)">Lotes</div>
+  <div class="nav-tab" onclick="show('erp',this)">ERP</div>
+  <div class="nav-tab" onclick="show('champion',this)">Champion</div>
+  <div class="nav-tab" onclick="show('oficina',this)">Oficina</div>
+  <div class="nav-tab" onclick="show('escenarios',this)">Escenarios</div>
+  <div class="nav-tab" onclick="show('checklist',this)">Checklist</div>
+  <div class="nav-tab" onclick="show('glosario',this)">Glosario</div>
+  <div class="nav-tab" onclick="show('notas',this)">Notas</div>
+  <div class="nav-tab" onclick="show('wa',this)">WhatsApp</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: MENTALIDAD
+══════════════════════════════════════════════════ -->
+<div id="mentalidad" class="panel active">
+
+  <div class="nota warn">
+    <span class="nota-label">⚠ Regla número uno</span>
+    <p>No menciones tecnología específica. Nada de "Claude", "IA generativa", "automatización". Di: información, proceso, tiempo, claridad.</p>
+  </div>
+
+  <div class="nota">
+    <span class="nota-label">Principio del día</span>
+    <p>Escucha el 70%, habla el 30%. Eres alguien que quiere entender el negocio — no vender un servicio. El objetivo es salir con Javier pensando: "Walter entiende mi negocio."</p>
+  </div>
+
+  <div class="sec">Lo que buscas hoy</div>
+  <ul class="list">
+    <li>Cómo fluye el producto físicamente: pez → proceso → despacho</li>
+    <li>Dónde aparece el papel, la planilla o el WhatsApp como herramienta de trabajo</li>
+    <li>Quién explica procesos de forma espontánea → candidato a Champion</li>
+    <li>El lenguaje exacto del negocio: sus términos, sus métricas, sus dolores</li>
+    <li>Relación de Javier con su equipo en terreno</li>
+    <li>Cuántos lotes reciben por semana (confirmar)</li>
+    <li>Qué sistema ERP usan (SAP, Softland, Excel, otro)</li>
+  </ul>
+
+  <div class="sec">Los 3 datos críticos a confirmar</div>
+  <div class="card">
+    <div class="card-title">① Volumen de lotes por semana</div>
+    <div class="card-body">Determina el ROI real del Limpiador y si el piloto tiene suficientes iteraciones.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">② Sistema ERP o herramienta central</div>
+    <div class="card-body">Define la arquitectura del pipeline y si habrá fricción de doble registro.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">③ La persona que procesa documentos hoy</div>
+    <div class="card-body">Ese es casi seguro tu Champion #1. Si la ves trabajando, tienes nombre y rostro.</div>
+  </div>
+
+  <div class="nota ok">
+    <span class="nota-label">Si no hay reunión en oficina</span>
+    <p>No es un problema. Hoy ganaste contexto que ningún documento reemplaza. Agenda la sesión ejecutiva por videollamada esta semana.</p>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: FASES
+══════════════════════════════════════════════════ -->
+<div id="fases" class="panel">
+
+  <div class="nota">
+    <span class="nota-label">Contexto</span>
+    <p>La duración exacta la define Javier, no tú. Esto es orientativo — fluye con él.</p>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-num">①</div>
+    <div class="phase-content">
+      <div class="phase-title">Recepción y traslado</div>
+      <div class="phase-time">15 – 30 min</div>
+      <div class="phase-body">Escucha el tono de Javier. ¿Qué le preocupa hoy? No lances preguntas — observa primero. El estado de ánimo del CEO al llegar te dice mucho sobre qué tan disponible va a estar el resto del día.</div>
+    </div>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-num">②</div>
+    <div class="phase-content">
+      <div class="phase-title">Recorrido planta</div>
+      <div class="phase-time">2 – 4 horas</div>
+      <div class="phase-body">Modo curioso, callado. Una buena pregunta cada 20 minutos — no más. Anota nombres de personas que explican procesos espontáneamente. Observa pantallas, documentos físicos, flujos entre áreas.</div>
+    </div>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-num">③</div>
+    <div class="phase-content">
+      <div class="phase-title">Pausa / café</div>
+      <div class="phase-time">15 – 30 min</div>
+      <div class="phase-body">Momento relacional. Las personas hablan diferente cuando no están mostrando. Abre preguntas sobre el equipo, el crecimiento, lo que le quita el sueño. Si Javier menciona un dolor, no lo resuelvas — guárdalo para la oficina.</div>
+    </div>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-num">④</div>
+    <div class="phase-content">
+      <div class="phase-title">Reunión en oficina</div>
+      <div class="phase-time">30 – 60 min</div>
+      <div class="phase-body">Mapa del negocio → KPIs del CEO → semilla del dashboard. Si tienes tablet o notebook, muestra el dashboard interactivo UB-FP-VIS-001. Si no, haz la conversación de memoria.</div>
+    </div>
+  </div>
+
+  <div class="nota warn">
+    <span class="nota-label">Para abrir la reunión en oficina</span>
+    <p>"Javier, me pasé el día absorbiendo. Antes de irme, quiero mostrarte algo que preparé — y hacerte tres preguntas que no le hago a Luis."</p>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: PREGUNTAS
+══════════════════════════════════════════════════ -->
+<div id="preguntas" class="panel">
+
+  <div class="sec">En planta — fluyen naturalmente</div>
+  <div class="nota">
+    <span class="nota-label">Regla</span>
+    <p>Una buena pregunta cada 20 minutos. No las hagas todas — elige la que calce con lo que estás viendo.</p>
+  </div>
+  <ul class="list">
+    <li>"¿Este proceso siempre fue así o lo fueron cambiando con el tiempo?"</li>
+    <li>"¿Cómo saben en la oficina lo que está pasando aquí ahora mismo?"</li>
+    <li>"¿Hay algo que sepan que no está funcionando bien pero es difícil de cambiar?"</li>
+    <li>"¿Quién en el equipo tiene más claro cómo funciona todo esto de punta a punta?"</li>
+    <li>"Si pudieras saber una sola cosa en tiempo real sobre la operación, ¿qué sería?"</li>
+    <li>"¿Esto que veo aquí llega a algún sistema o se registra de otra forma?"</li>
+  </ul>
+
+  <div class="sec">Trazabilidad — diagnóstico específico</div>
+  <ul class="list">
+    <li>"¿Cuántos lotes de salmón reciben en una semana normal? ¿Eso varía mucho en temporada?"</li>
+    <li>"Cuando llega un lote, ¿qué documentos tiene que traer el pez para que puedan recibirlo?"</li>
+    <li>"¿Todos los centros proveedores mandan los documentos en el mismo formato?"</li>
+    <li>"¿Qué pasa cuando hay diferencia entre lo que dice el papel y lo que llegó físicamente?"</li>
+    <li>"Si Sernapesca llegara mañana sin aviso — ¿cuánto tardarían en armar el historial de un lote?"</li>
+    <li>"¿Cuántas horas semanales estimas que alguien invierte en procesar esos documentos?"</li>
+  </ul>
+
+  <div class="sec">Bodega — diagnóstico específico</div>
+  <ul class="list">
+    <li>"Cuando hablas de bodega, ¿te refieres a insumos que entran, al producto terminado, o al salmón en recepción?"</li>
+    <li>"Cuando llega un proveedor con guía de despacho, ¿cómo verifican que coincide con lo que dejó el camión?"</li>
+    <li>"¿Hay diferencias frecuentes entre lo que dice la guía y lo que realmente llega?"</li>
+    <li>"Si yo quisiera saber ahora mismo cuánto material X tienen en bodega, ¿en cuánto tiempo me das ese número?"</li>
+  </ul>
+
+  <div class="sec">En pausa / café</div>
+  <ul class="list">
+    <li>"¿Cómo está el equipo con todo esto — lo ven como oportunidad o hay resistencia?"</li>
+    <li>"¿Qué tan involucrado estás tú en el día a día del GAF?"</li>
+    <li>"¿Hay algo que quisieras tener antes de fin de año que hoy no tienes?"</li>
+    <li>"¿Qué tan rápido crece Fishplus? ¿El sistema aguanta ese ritmo?"</li>
+  </ul>
+
+  <div class="verbatim">"Javier, si pudieras eliminar un solo paso de este proceso — el más tedioso o el que más errores genera — ¿cuál sería?"</div>
+  <div class="nota">
+    <span class="nota-label">La pregunta más reveladora</span>
+    <p>Esa respuesta te dice exactamente dónde está el Quick Win. Úsala cuando la conversación ya esté fluida.</p>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: LOTES (VOLUMEN)
+══════════════════════════════════════════════════ -->
+<div id="lotes" class="panel">
+
+  <div class="nota">
+    <span class="nota-label">Estimación de partida</span>
+    <p>Fishplus procesa ~1.814 toneladas al año. Con lote promedio de 9–15 ton, eso da entre 2 y 5 lotes por semana. Confirmas el número real mañana.</p>
+  </div>
+
+  <div class="sec">Ahorro estimado según volumen</div>
+  <div class="card">
+    <div class="card-body" style="margin-bottom:14px; font-size:12px; color:var(--muted);">Asumiendo 45 min manual → 5 min con IA por lote</div>
+    <div class="vol-row">
+      <div class="vol-label">2 lotes/sem</div>
+      <div class="vol-bar-wrap"><div class="vol-bar c">~7 hrs / piloto</div></div>
+    </div>
+    <div class="vol-row">
+      <div class="vol-label">3 lotes/sem</div>
+      <div class="vol-bar-wrap"><div class="vol-bar m">~10 hrs / piloto</div></div>
+    </div>
+    <div class="vol-row">
+      <div class="vol-label">5 lotes/sem</div>
+      <div class="vol-bar-wrap"><div class="vol-bar h">~17 hrs / piloto</div></div>
+    </div>
+  </div>
+
+  <div class="sec">Cómo leer el número cuando lo tengas</div>
+  <div class="card">
+    <div class="card-title">Menos de 2 lotes por semana</div>
+    <div class="card-body">El ROI se apoya en reducción de errores y valor para auditorías — no solo en horas. No es volumen, es criticidad.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Entre 2 y 6 lotes por semana ✓ ideal</div>
+    <div class="card-body">Zona perfecta. El piloto tiene suficientes iteraciones reales, el Champion no se siente abrumado, el reporte de S5 tiene datos limpios.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Más de 6 lotes por semana</div>
+    <div class="card-body">El argumento de urgencia se fortalece solo. "Esto no es un ahorro marginal — es una carga que absorbe horas productivas todos los días."</div>
+  </div>
+
+  <div class="sec">Preguntas para confirmar mañana</div>
+  <div class="verbatim">"¿Cuántos lotes de salmón reciben en una semana normal? ¿Eso cambia mucho entre temporada alta y baja?"</div>
+  <div class="verbatim">"¿Hoy llegó algún lote? ¿Con qué frecuencia llegan los camiones o los wellboats?"</div>
+  <div class="verbatim">"Cuando me decías que trazabilidad consume tiempo — ¿estás pensando en algo que pasa todos los días o más bien dos o tres veces por semana?"</div>
+
+  <div class="nota">
+    <span class="nota-label">También confirmar</span>
+    <p>¿En qué parte de la temporada estamos ahora? Temporada alta da más datos para el ROI. Temporada baja da más calma para que el Champion aprenda.</p>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: ERP
+══════════════════════════════════════════════════ -->
+<div id="erp" class="panel">
+
+  <div class="nota warn">
+    <span class="nota-label">La pregunta más importante sobre el ERP</span>
+    <p>¿Es el destino final de los datos de trazabilidad, o solo de los datos financieros? Eso define si el Champion va a tener doble registro o no.</p>
+  </div>
+
+  <div class="sec">Los candidatos probables</div>
+
+  <div class="erp-grid">
+
+    <div class="erp-card">
+      <div class="erp-header">
+        <div class="erp-name">SAP Business One</div>
+        <div class="erp-tag tag-hi">Riesgo: doble registro</div>
+      </div>
+      <div class="erp-body">
+        <div class="erp-row">
+          <div class="erp-label">Se ve</div>
+          <div class="erp-val">Interfaz Windows densa, muchos campos, menús laterales con módulos (Compras, Ventas, Inventario, Finanzas). Visualmente pesado.</div>
+        </div>
+        <div class="erp-row">
+          <div class="erp-label">Lo tiene</div>
+          <div class="erp-val">Empresas medianas ordenadas con inversión en TI. USD 20–40k de implementación. Las empresas que lo tienen lo dicen con orgullo.</div>
+        </div>
+        <div class="erp-row">
+          <div class="erp-label">Para el piloto</div>
+          <div class="erp-val">Encuadre clave: Sheets es la capa de análisis y verificación, SAP sigue siendo el registro oficial. El Champion verifica en Sheets, ingresa en SAP. Añade un paso pero elimina la extracción manual del PDF.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="erp-card">
+      <div class="erp-header">
+        <div class="erp-name">Softland</div>
+        <div class="erp-tag tag-med">Riesgo: bajo para piloto</div>
+      </div>
+      <div class="erp-body">
+        <div class="erp-row">
+          <div class="erp-label">Se ve</div>
+          <div class="erp-val">Interfaz Windows más simple que SAP. Barra de menú superior clásica. Estilo aplicación 2000s — funcional, sin diseño moderno.</div>
+        </div>
+        <div class="erp-row">
+          <div class="erp-label">Lo tiene</div>
+          <div class="erp-val">Empresas medianas chilenas. Muy fuerte en remuneraciones y contabilidad. Módulo de inventario existe pero suele ser insuficiente para operaciones complejas.</div>
+        </div>
+        <div class="erp-row">
+          <div class="erp-label">Para el piloto</div>
+          <div class="erp-val">Si lo tienen, el Quick Win #2 (RRHH / horas extra) casi seguro pasa por Softland. Sheets puede coexistir sin fricción para trazabilidad — no hay presión de integración.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="erp-card">
+      <div class="erp-header">
+        <div class="erp-name">Cona</div>
+        <div class="erp-tag tag-lo">Riesgo: probablemente irrelevante</div>
+      </div>
+      <div class="erp-body">
+        <div class="erp-row">
+          <div class="erp-label">Se ve</div>
+          <div class="erp-val">Sistema acuícola chileno. Diseñado para cultivadores — centros de cultivo, FCR, biomasa, mortalidad por jaula.</div>
+        </div>
+        <div class="erp-row">
+          <div class="erp-label">Lo tiene</div>
+          <div class="erp-val">Los proveedores de Fishplus, no Fishplus mismo. Fishplus no cultiva — procesa.</div>
+        </div>
+        <div class="erp-row">
+          <div class="erp-label">Para el piloto</div>
+          <div class="erp-val">Si los centros proveedores exportan desde Cona, los PDFs que llegan a Fishplus pueden tener estructura consistente — lo que hace el prompt del Limpiador más preciso.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="erp-card">
+      <div class="erp-header">
+        <div class="erp-name">Excel puro / sin ERP</div>
+        <div class="erp-tag tag-lo">Riesgo: ninguno — máxima libertad</div>
+      </div>
+      <div class="erp-body">
+        <div class="erp-row">
+          <div class="erp-label">Se ve</div>
+          <div class="erp-val">Múltiples archivos Excel abiertos como herramienta central. Pestañas, fórmulas, macros. Archivos que solo entiende quien los construyó.</div>
+        </div>
+        <div class="erp-row">
+          <div class="erp-label">Lo tiene</div>
+          <div class="erp-val">Empresas en crecimiento rápido sin TI formal. 7 años, 99 personas — perfectamente posible. Softland para SII, Excel para todo lo demás.</div>
+        </div>
+        <div class="erp-row">
+          <div class="erp-label">Para el piloto</div>
+          <div class="erp-val">Sheets puede ser directamente el sistema mejorado — no una capa adicional. Argumento al Champion: "Lo que haces en Excel lo haces en Sheets, pero los datos llegan solos."</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sec">Cómo identificarlos sin preguntar</div>
+  <div class="signal-row">
+    <div class="signal-icon">👁</div>
+    <div class="signal-text"><strong>Pantalla densa con muchos campos</strong>Menús laterales, tablas en gris → SAP B1 o Softland</div>
+  </div>
+  <div class="signal-row">
+    <div class="signal-icon">📊</div>
+    <div class="signal-text"><strong>Excel con columnas de colores y filtros activos</strong>Escenario Excel puro — sin ERP para operaciones</div>
+  </div>
+  <div class="signal-row">
+    <div class="signal-icon">🌐</div>
+    <div class="signal-text"><strong>Formulario web con botón "Guardar"</strong>Sistema propio o ERP con interfaz web moderna</div>
+  </div>
+
+  <div class="sec">Pregunta clave en terreno</div>
+  <div class="verbatim">"¿Y esto lo registran acá directamente o lo pasan después a algún otro sistema?"</div>
+  <div class="nota">
+    <span class="nota-label">Por qué funciona</span>
+    <p>Le importa al proceso, no al sistema. Pero la respuesta te dice exactamente dónde viven los datos sin que suene a auditoría técnica.</p>
+  </div>
+
+  <div class="sec">Si tienen SAP y hay presión de doble registro</div>
+  <div class="verbatim">"Entiendo. Entonces usamos Sheets como capa de verificación antes de que el dato entre al ERP. El Champion revisa que todo esté correcto en Sheets, y recién entonces hace el ingreso al sistema. Eso reduce los errores de entrada al ERP, no los aumenta."</div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: CHAMPION
+══════════════════════════════════════════════════ -->
+<div id="champion" class="panel">
+
+  <div class="nota">
+    <span class="nota-label">Principio</span>
+    <p>El Champion no se declara — se revela. No puedes preguntarlo directamente. Observas con criterio durante el recorrido.</p>
+  </div>
+
+  <div class="sec">El perfil correcto</div>
+  <div class="card">
+    <div class="card-title">① Conoce el proceso de verdad</div>
+    <div class="card-body">No el proceso oficial del manual — el real, con sus atajos, excepciones y parches. Si le preguntas qué pasa cuando llega un lote con documentos incompletos, responde de inmediato.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">② Tiene algo que ganar</div>
+    <div class="card-body">La persona que más horas pierde en el proceso manual tiene la motivación más real. El entusiasmo sin dolor resuelto no sostiene la adopción cuando te vayas.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">③ Tiene autonomía para probar</div>
+    <div class="card-body">Si cada decisión necesita aprobación de Luis, el flujo queda paralizado en la primera excepción. Necesitas a alguien que pueda decir "voy a probar esto diferente esta semana".</div>
+  </div>
+
+  <div class="sec">Señales positivas en terreno</div>
+  <div class="signal-row">
+    <div class="signal-icon">🗣</div>
+    <div class="signal-text"><strong>Explica sin que le preguntes</strong>Mientras Javier muestra algo, esta persona agrega contexto espontáneamente. Conoce el proceso más profundo que su descripción oficial.</div>
+  </div>
+  <div class="signal-row">
+    <div class="signal-icon">😔</div>
+    <div class="signal-text"><strong>Menciona una ineficiencia con resignación</strong>"Siempre hay que revisarlo dos veces porque los PDFs no vienen todos iguales." Dolor real, articulado con claridad.</div>
+  </div>
+  <div class="signal-row">
+    <div class="signal-icon">💻</div>
+    <div class="signal-text"><strong>La pantalla más ocupada</strong>PDF + planilla + correo + sistema abiertos al mismo tiempo. No es desorden — es volumen de trabajo real.</div>
+  </div>
+  <div class="signal-row">
+    <div class="signal-icon">👆</div>
+    <div class="signal-text"><strong>Javier la nombra espontáneamente</strong>"Eso lo ve Claudia" o "pregúntale a Rodrigo". Javier la está señalando sin darse cuenta.</div>
+  </div>
+
+  <div class="sec">Señales negativas — no es el Champion</div>
+  <div class="signal-row">
+    <div class="signal-icon">⚡</div>
+    <div class="signal-text"><strong>El entusiasta sin proceso</strong>Le encanta ChatGPT pero no tiene un proceso manual claro que mejorar. El entusiasmo sin fricción no construye hábito.</div>
+  </div>
+  <div class="signal-row">
+    <div class="signal-icon">🏆</div>
+    <div class="signal-text"><strong>El que tiene todo bajo control</strong>Describe su proceso con orgullo. Sin dolor que resolver, sin motivación para cambiar nada.</div>
+  </div>
+  <div class="signal-row">
+    <div class="signal-icon">👔</div>
+    <div class="signal-text"><strong>El más senior del área</strong>Pocas veces es el mejor Champion. Tiene menos tiempo y el proceso lo ejecuta alguien de su equipo. Puede ser sponsor interno, no usuario diario.</div>
+  </div>
+
+  <div class="sec">Si hay dos candidatos</div>
+  <div class="nota">
+    <span class="nota-label">Criterio de desempate</span>
+    <p>Elige al que tiene más dolor en el proceso actual, no al que parece más cómodo con tecnología. La adopción la sostiene la motivación, no la habilidad técnica.</p>
+  </div>
+
+  <div class="sec">Preguntas para confirmar con Javier (en oficina)</div>
+  <div class="verbatim">"Javier, en el recorrido vi que [nombre] maneja bastante del proceso de documentos de entrada. ¿Es él/ella quien está más encima de eso día a día?"</div>
+  <div class="verbatim">"¿Hay alguien en el equipo que tenga el proceso de trazabilidad más claro que nadie — que si le preguntas cómo llegó el lote X de hace tres semanas, te lo puede decir sin buscar mucho?"</div>
+
+  <div class="sec">Si lo conoces mañana — primer contacto</div>
+  <div class="verbatim">"Hola, qué bueno conocerte. Javier me contó que manejas bastante del proceso de documentación de entrada. Me gustaría sentarme contigo unos 30 minutos la semana que viene para entender cómo funciona eso hoy — nada más que escuchar, no te voy a pedir que cambies nada todavía."</div>
+  <div class="nota">
+    <span class="nota-label">Por qué funciona</span>
+    <p>Valida su rol, baja la amenaza, planta la semilla de la entrevista S1. El Champion sale con curiosidad, no con ansiedad.</p>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: OFICINA
+══════════════════════════════════════════════════ -->
+<div id="oficina" class="panel">
+
+  <div class="nota">
+    <span class="nota-label">Apertura</span>
+    <p>"Javier, me pasé el día absorbiendo. Antes de irme, quiero mostrarte algo que preparé — y hacerte tres preguntas que no le hago a Luis."</p>
+  </div>
+
+  <div class="sec">Bloque A — Mapa del negocio (10–15 min)</div>
+  <div class="nota">
+    <span class="nota-label">Objetivo</span>
+    <p>Que Javier describa el flujo end-to-end con sus propias palabras. Tú escuchas y tomas nota textual — sus palabras son las que usarás en todos los documentos del proyecto.</p>
+  </div>
+  <div class="verbatim">"¿Cómo describirías Fishplus de punta a punta? No el organigrama — el viaje del producto."</div>
+  <div class="verbatim">"¿Dónde está la trazabilidad en ese flujo? ¿Qué área la lidera y qué área la recibe?"</div>
+  <div class="verbatim">"¿Hay partes del proceso que hoy son cajas negras para ti — que sabes que pasan pero no ves en detalle?"</div>
+  <div class="verbatim">"El proceso de trazabilidad que me mencionaste — ¿qué áreas lo tocan y cómo se conectan entre ellas?"</div>
+
+  <div class="sec">Bloque B — KPIs del CEO (10–15 min)</div>
+  <div class="nota">
+    <span class="nota-label">Objetivo</span>
+    <p>Identificar qué información necesita y hoy no tiene en tiempo real. No sugieras KPIs — espera los suyos.</p>
+  </div>
+  <div class="verbatim">"Si tuvieras 5 números en pantalla cada mañana que te dijeran cómo está el negocio — solo 5 — ¿cuáles serían?"</div>
+  <div class="verbatim">"¿Hay información que llegas a saber con 2 o 3 días de retraso, que si la tuvieras en el momento cambiaría cómo decides?"</div>
+  <div class="verbatim">"¿Qué evento en cualquier centro necesitas saber inmediatamente — no al día siguiente?"</div>
+  <div class="verbatim">"Cuando preparas el reporte para el directorio, ¿cuánto tiempo te toma armar esa información?"</div>
+
+  <div class="sec">Bloque C — Semilla del dashboard (5–10 min)</div>
+  <div class="verbatim">"Lo que me describes es básicamente una necesidad de visibilidad. Información correcta, en el momento correcto, sin depender de nadie que la busque por ti."</div>
+  <div class="verbatim">"El piloto con Luis es el primer bloque de algo más grande. Ese algo más grande empieza a verse como lo que me acabas de describir."</div>
+  <div class="verbatim">"No te voy a prometer nada hoy. Pero lo que vi en terreno y lo que me dijiste apunta exactamente hacia ahí."</div>
+
+  <div class="nota ok">
+    <span class="nota-label">Si pregunta "¿y cuándo tendríamos eso?"</span>
+    <p>"El piloto de 5 semanas nos da la base técnica. Si eso va bien, la conversación del dashboard ejecutivo la tenemos al cierre del piloto." No prometas fechas — promete lógica.</p>
+  </div>
+
+  <div class="sec">Cierre de la reunión</div>
+  <div class="verbatim">"Javier, esto estuvo buenísimo. Me llevo más contexto del que esperaba."</div>
+  <div class="verbatim">"Me coordino con Luis esta semana. Si hay algo que quieras que tenga en mente antes de esa reunión, escríbeme."</div>
+  <div class="verbatim">"Gracias por el día — en serio. Ver la planta cambió completamente cómo entiendo el proyecto."</div>
+
+  <div class="sec">Alcance del piloto — no confirmar todavía</div>
+  <div class="nota warn">
+    <span class="nota-label">⚠ No cierres el alcance mañana</span>
+    <p>Javier mencionó trazabilidad y bodega por WhatsApp — son sus hipótesis, no un diagnóstico. El diagnóstico real lo hace Luis. La frase correcta si Javier lo presiona:</p>
+  </div>
+  <div class="verbatim">"Lo que me describes de trazabilidad y bodega tiene mucho sentido como punto de partida. Lo valido con Luis la semana que viene — quiero asegurarme de que esos son también los dos procesos donde más tiempo pierde su equipo. Si confirma eso, arrancamos directo."</div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: ESCENARIOS
+══════════════════════════════════════════════════ -->
+<div id="escenarios" class="panel">
+
+  <div class="escenario">
+    <div class="escenario-if">Si ocurre</div>
+    <div class="escenario-q">Javier cancela la reunión en oficina o no hay tiempo</div>
+    <div class="escenario-a">"Sin problema — ya tengo mucho del día. ¿Te parece que hablamos por videollamada esta semana? Tengo algo que mostrarte que prefiero hacerlo con tiempo."</div>
+  </div>
+
+  <div class="escenario">
+    <div class="escenario-if">Si ocurre</div>
+    <div class="escenario-q">Alguien del equipo pregunta qué tecnología van a usar</div>
+    <div class="escenario-a">"Todavía estamos en diagnóstico — no quiero anticipar soluciones antes de entender bien el proceso. Eso lo conversamos después con el equipo."</div>
+  </div>
+
+  <div class="escenario">
+    <div class="escenario-if">Si ocurre</div>
+    <div class="escenario-q">Javier te presenta a Luis en planta hoy</div>
+    <div class="escenario-a">Saludo cordial, no hagas preguntas diagnósticas. "Luis, qué bueno conocerte. Quedo a tu disposición para cuando agendemos la semana que viene."</div>
+  </div>
+
+  <div class="escenario">
+    <div class="escenario-if">Si ocurre</div>
+    <div class="escenario-q">Alguien pregunta cuánto cuesta el proyecto</div>
+    <div class="escenario-a">"Eso está en la propuesta que le hice llegar a Javier. Hoy prefiero enfocarme en entender el negocio — después hablamos de números."</div>
+  </div>
+
+  <div class="escenario">
+    <div class="escenario-if">Si ocurre</div>
+    <div class="escenario-q">Javier pide confirmar que el piloto es trazabilidad + bodega</div>
+    <div class="escenario-a">"Tiene mucho sentido como punto de partida. Lo valido con Luis la semana que viene — quiero asegurarme de que son también donde más tiempo pierde su equipo. Si confirma eso, arrancamos directo."</div>
+  </div>
+
+  <div class="escenario">
+    <div class="escenario-if">Si ocurre</div>
+    <div class="escenario-q">Javier pregunta si van a necesitar cambiar los sistemas actuales</div>
+    <div class="escenario-a">"No — trabajamos sobre lo que ya tienen. Sin inversión en software nuevo. Lo que cambia es cómo fluye la información entre las herramientas que el equipo ya usa hoy."</div>
+  </div>
+
+  <div class="escenario">
+    <div class="escenario-if">Si ocurre</div>
+    <div class="escenario-q">Javier menciona automatización total o "que sea solo"</div>
+    <div class="escenario-a">"Sí, se puede llegar ahí. El piloto nos da el mapa: entendemos el proceso real, medimos cuánto recuperamos con la versión asistida, y eso nos dice exactamente dónde vale la pena invertir en automatización completa. Es la secuencia correcta."</div>
+  </div>
+
+  <div class="escenario">
+    <div class="escenario-if">Si ocurre</div>
+    <div class="escenario-q">La visita se extiende y no hay reunión en oficina</div>
+    <div class="escenario-a">Está bien. Agenda la sesión ejecutiva por videollamada esta semana. Hoy ganaste contexto de terreno — ese era el objetivo real. El WhatsApp hace el puente.</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: CHECKLIST
+══════════════════════════════════════════════════ -->
+<div id="checklist" class="panel">
+
+  <div class="sec">Antes de salir</div>
+  <div id="pre-items">
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Ropa apropiada para planta: calzado cerrado, ropa que aguante olor</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Tablet cargada — úsala para notas (pestaña Notas en esta app) y para mostrar el dashboard UB-FP-VIS-001 en la oficina</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Celular cargado / batería externa de respaldo</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Dashboard UB-FP-VIS-001 accesible offline o en tablet</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Esta tarjeta guardada sin necesidad de wifi</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Llegué con tiempo — no estoy apurado</div></div>
+  </div>
+
+  <div class="sec">Lo que confirmas mañana sí o sí</div>
+  <div id="confirm-items">
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Volumen de lotes por semana (y si estamos en temporada alta o baja)</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Sistema ERP o herramienta central (SAP, Softland, Excel, otro)</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Nombre de la persona que procesa documentos de trazabilidad hoy</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">¿El ERP cubre trazabilidad o solo finanzas/remuneraciones?</div></div>
+  </div>
+
+  <div class="sec">Post-visita — en el camino de vuelta</div>
+  <div id="post-items">
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Anoté nombres de candidatos a Champion con rol específico</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Escribí 3 observaciones de planta que me sorprendieron</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Anoté algo que Javier mencionó que no estaba en mi radar</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Confirmé volumen de lotes y sistema ERP</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Mandé el WhatsApp a Javier (mismo día)</div></div>
+    <div class="check-item" onclick="toggle(this)"><div class="check-box"></div><div class="check-text">Actualicé el mapa de proceso macro con lo observado</div></div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: GLOSARIO
+══════════════════════════════════════════════════ -->
+<div id="glosario" class="panel">
+
+  <div class="nota">
+    <span class="nota-label">Cómo usarlo</span>
+    <p>Busca el término exacto que escuches. Si aparece, ya sabes de qué hablan y qué pregunta hacer. Si no aparece, anótalo en la pestaña Notas.</p>
+  </div>
+
+  <div class="glos-search-wrap">
+    <input id="glos-input" class="glos-search" type="text" placeholder="Buscar término..." oninput="filtrarGlosario()" autocomplete="off" autocorrect="off" spellcheck="false">
+    <span class="glos-clear" onclick="limpiarGlosario()">✕</span>
+  </div>
+
+  <div id="glos-contador" class="glos-contador"></div>
+
+  <!-- CATEGORÍA: Métricas de producción -->
+  <div class="glos-cat" data-cat="metricas">MÉTRICAS DE PRODUCCIÓN</div>
+
+  <div class="glos-item" data-terms="fcr factor conversion alimentaria">
+    <div class="glos-term">FCR</div>
+    <div class="glos-full">Factor de Conversión Alimentaria</div>
+    <div class="glos-def">Kilos de alimento usados por kilo de pez producido. Industria: 1.1–1.5. Menor es mejor. Si mencionan FCR inconsistente entre centros proveedores, ahí está un Quick Win de análisis.</div>
+  </div>
+
+  <div class="glos-item" data-terms="biomasa peso peces toneladas">
+    <div class="glos-term">Biomasa</div>
+    <div class="glos-full">Peso total de peces vivos en un lote, en toneladas</div>
+    <div class="glos-def">Indicador económico central. Fluctúa semanalmente. Los informes de biomasa son uno de los PDFs que llegan a Fishplus desde los centros proveedores.</div>
+  </div>
+
+  <div class="glos-item" data-terms="mortalidad peces muertos porcentaje">
+    <div class="glos-term">Mortalidad (%)</div>
+    <div class="glos-full">Porcentaje de peces muertos sobre el total del lote</div>
+    <div class="glos-def">Se reporta semanal o mensual por centro proveedor. Alta mortalidad = alerta sanitaria. Dato que debe quedar en la trazabilidad del lote recibido por Fishplus.</div>
+  </div>
+
+  <div class="glos-item" data-terms="rendimiento yield filete porcentaje">
+    <div class="glos-term">Rendimiento (%)</div>
+    <div class="glos-full">Producto final obtenido sobre peso bruto del pez recibido</div>
+    <div class="glos-def">Ej: salmón de 5 kg rinde ~60% en filete = 3 kg. KPI económico central de la planta. Diferencias entre lotes de distintos proveedores señalan problema de calidad o sanidad.</div>
+  </div>
+
+  <div class="glos-item" data-terms="lote siembra codigo identificador">
+    <div class="glos-term">Lote / Siembra</div>
+    <div class="glos-full">Grupo de peces con código único de identificación</div>
+    <div class="glos-def">La trazabilidad lote a lote es el corazón del ASC Chain of Custody que Fishplus debe cumplir. Formato típico: SDS-LLQ-04.</div>
+  </div>
+
+  <div class="glos-item" data-terms="calibre talla peso rango clasificacion">
+    <div class="glos-term">Calibre / Talla</div>
+    <div class="glos-full">Clasificación del salmón por peso en rangos estándar</div>
+    <div class="glos-def">Ej: 2–3 kg, 3–4 kg, 4–5 kg, 5+. Determina precio de venta por mercado de destino. Los lotes recibidos vienen con datos de talla promedio del centro proveedor.</div>
+  </div>
+
+  <!-- CATEGORÍA: Procesamiento en planta -->
+  <div class="glos-cat" data-cat="planta">PROCESAMIENTO EN PLANTA</div>
+
+  <div class="glos-item" data-terms="programacion planta planificacion turno linea">
+    <div class="glos-term">Programación de planta</div>
+    <div class="glos-full">Planificación de qué lotes se procesan cada día</div>
+    <div class="glos-def">Cuánto personal, en qué línea, a qué hora. Javier ya lo hace con Claude sobre Excels grandes — punto de partida natural para la conversación si lo menciona.</div>
+  </div>
+
+  <div class="glos-item" data-terms="linea proceso faenamiento fileteo cadena produccion">
+    <div class="glos-term">Línea de proceso</div>
+    <div class="glos-full">Cadena de producción dentro de la planta</div>
+    <div class="glos-def">Faenamiento, fileteo, porcionado, ahumado, congelado. Fishplus puede tener varias líneas operando en paralelo. La programación de planta asigna lotes a líneas.</div>
+  </div>
+
+  <div class="glos-item" data-terms="faenamiento sacrificio sangrado eviscerado">
+    <div class="glos-term">Faenamiento</div>
+    <div class="glos-full">Primera etapa: sacrificio, sangrado, evisceración y limpieza del pez</div>
+    <div class="glos-def">Ocurre al llegar el lote a la planta. Aquí el pez pasa de biomasa viva a materia prima procesable. Empieza la trazabilidad interna de Fishplus.</div>
+  </div>
+
+  <div class="glos-item" data-terms="fileteo porcionado corte formato">
+    <div class="glos-term">Fileteo / Porcionado</div>
+    <div class="glos-full">Corte del salmón en el formato final del producto</div>
+    <div class="glos-def">Filete entero, porciones, HGT, WOG. Determina el producto que va a exportación y el mercado de destino.</div>
+  </div>
+
+  <div class="glos-item" data-terms="hgt wog sin cabeza especificacion exportacion">
+    <div class="glos-term">HGT / WOG</div>
+    <div class="glos-full">Especificaciones de corte para exportación</div>
+    <div class="glos-def">HGT = Head Gut Tail off (sin cabeza, vísceras ni cola). WOG = Without Organs and Gills. Frecuentes en exportación a EE.UU. y Europa. Si Javier los menciona, es señal de que conoce el detalle comercial.</div>
+  </div>
+
+  <div class="glos-item" data-terms="cadena frio temperatura control ruptura">
+    <div class="glos-term">Cadena de frío</div>
+    <div class="glos-full">Control continuo de temperatura desde cosecha hasta exportación</div>
+    <div class="glos-def">Ruptura de cadena de frío = rechazo sanitario en destino. Fishplus debe documentar y certificar por lote. Exigencia de HACCP y de los mercados de destino.</div>
+  </div>
+
+  <div class="glos-item" data-terms="wellboat camion vivo transporte peces">
+    <div class="glos-term">Wellboat / Camión vivo</div>
+    <div class="glos-full">Embarcación o camión especializado para transportar peces vivos</div>
+    <div class="glos-def">Mantiene temperatura y oxígeno del agua. El documento que acompaña al wellboat es el primer registro de trazabilidad del lote — llega junto con los peces.</div>
+  </div>
+
+  <!-- CATEGORÍA: Documentos de trazabilidad -->
+  <div class="glos-cat" data-cat="docs">DOCUMENTOS Y TRAZABILIDAD</div>
+
+  <div class="glos-item" data-terms="guia despacho documento traslado acompañamiento">
+    <div class="glos-term">Guía de despacho</div>
+    <div class="glos-full">Documento que acompaña cada traslado de salmones del centro a la planta</div>
+    <div class="glos-def">Uno de los documentos que Fishplus procesa manualmente hoy. Quick Win candidato directo para el Limpiador de Documentos. Debe coincidir con lo que llegó físicamente.</div>
+  </div>
+
+  <div class="glos-item" data-terms="certificado sanitario movimiento traslado sernapesca">
+    <div class="glos-term">Certificado sanitario de movimiento</div>
+    <div class="glos-full">Documento Sernapesca que autoriza el traslado de peces</div>
+    <div class="glos-def">Sin este documento no hay trazabilidad legal. Fishplus debe registrarlo por cada lote recibido. Su ausencia puede significar problemas en auditoría.</div>
+  </div>
+
+  <div class="glos-item" data-terms="informe exportacion despacho aduanas volumen destino">
+    <div class="glos-term">Informe de exportación</div>
+    <div class="glos-full">Consolida volumen, destino, precio y certificaciones de cada despacho</div>
+    <div class="glos-def">Exigido por Aduanas y Sernapesca. Proceso manual de consolidación de múltiples lotes y destinos. Candidato a Quick Win de generación automática.</div>
+  </div>
+
+  <div class="glos-item" data-terms="nota debito credito diferencia factura ajuste">
+    <div class="glos-term">Nota de débito / crédito</div>
+    <div class="glos-full">Documento contable para ajustar diferencias entre facturado y entregado</div>
+    <div class="glos-def">Frecuente cuando hay discrepancia de peso o calidad con proveedores. Si los cruces de bodega generan notas de débito, hay un proceso administrativo detrás que consume tiempo.</div>
+  </div>
+
+  <!-- CATEGORÍA: Certificaciones -->
+  <div class="glos-cat" data-cat="cert">CERTIFICACIONES</div>
+
+  <div class="glos-item" data-terms="asc chain custody cadena custodia trazabilidad origen">
+    <div class="glos-term">ASC Chain of Custody</div>
+    <div class="glos-full">Certificación de cadena de custodia — trazabilidad origen a producto final</div>
+    <div class="glos-def">Fishplus la tiene. Exige rastrear cada lote hasta su centro de cultivo origen. Es exactamente el proceso de trazabilidad que Javier quiere mejorar. Si fallan aquí, pierden la certificación.</div>
+  </div>
+
+  <div class="glos-item" data-terms="bap best aquaculture practices calidad sostenibilidad">
+    <div class="glos-term">BAP</div>
+    <div class="glos-full">Best Aquaculture Practices — estándar internacional de calidad</div>
+    <div class="glos-def">Fishplus la tiene. Cubre sostenibilidad, responsabilidad social y trazabilidad. Mercados internacionales lo exigen cada vez más como condición de compra.</div>
+  </div>
+
+  <div class="glos-item" data-terms="haccp puntos criticos control sanitario exportacion">
+    <div class="glos-term">HACCP</div>
+    <div class="glos-full">Hazard Analysis Critical Control Points — control sanitario para exportación</div>
+    <div class="glos-def">Fishplus ya lo tiene. Significa que su proceso tiene puntos críticos documentados. Exigido por Sernapesca para exportar. Cada punto crítico genera documentación que hay que mantener.</div>
+  </div>
+
+  <div class="glos-item" data-terms="smeta sedex auditoria etica laboral condiciones">
+    <div class="glos-term">SMETA / Sedex</div>
+    <div class="glos-full">Auditoría ética de comercio — condiciones laborales y sociales</div>
+    <div class="glos-def">Fishplus la tiene. Evalúa condiciones de trabajo, horas, seguridad. Implica registros de RRHH auditables — relevante para el Quick Win #2 de horas extra.</div>
+  </div>
+
+  <div class="glos-item" data-terms="kosher certificacion alimentaria judia origen">
+    <div class="glos-term">Kosher</div>
+    <div class="glos-full">Certificación alimentaria para mercado judío</div>
+    <div class="glos-def">Fishplus la tiene. Exige trazabilidad de origen estricta — el salmón debe poder rastrearse al centro de cultivo de origen sin excepción. Genera exigencias documentales adicionales por lote.</div>
+  </div>
+
+  <!-- CATEGORÍA: Regulación y organismos -->
+  <div class="glos-cat" data-cat="reg">REGULACIÓN Y ORGANISMOS</div>
+
+  <div class="glos-item" data-terms="sernapesca servicio pesca acuicultura regulacion fiscalizacion">
+    <div class="glos-term">Sernapesca</div>
+    <div class="glos-full">Servicio Nacional de Pesca y Acuicultura — autoridad regulatoria</div>
+    <div class="glos-def">Fiscaliza trazabilidad, certificados sanitarios y uso de antibióticos. Si Fishplus no puede presentar la documentación completa de un lote ante una visita sorpresa, hay sanción.</div>
+  </div>
+
+  <div class="glos-item" data-terms="sifa sistema fiscalizacion acuicultura plataforma declaracion">
+    <div class="glos-term">SIFA</div>
+    <div class="glos-full">Sistema de Fiscalización de Acuicultura de Sernapesca</div>
+    <div class="glos-def">Plataforma online donde los centros proveedores declaran mortalidad y producción. Fishplus recibe esa información. Si pueden cruzar SIFA con sus registros internos, ganan eficiencia regulatoria.</div>
+  </div>
+
+  <div class="glos-item" data-terms="concesion acuicola derecho estado mar centro">
+    <div class="glos-term">Concesión acuícola</div>
+    <div class="glos-full">Derecho otorgado por el Estado para operar un centro de cultivo marino</div>
+    <div class="glos-def">No se otorgan nuevas desde 2011. Los centros proveedores de Fishplus operan bajo concesiones existentes. Es parte del origen legal de cada lote recibido.</div>
+  </div>
+
+  <!-- CATEGORÍA: Enfermedades y sanidad -->
+  <div class="glos-cat" data-cat="sanidad">SANIDAD Y ENFERMEDADES</div>
+
+  <div class="glos-item" data-terms="ISA anemia infecciosa salmon enfermedad viral">
+    <div class="glos-term">ISA</div>
+    <div class="glos-full">Anemia Infecciosa del Salmón — enfermedad viral devastadora</div>
+    <div class="glos-def">Crisis 2007–2010 destruyó 75% de la industria. Si un lote viene de un centro con ISA activo, Fishplus no puede recibirlo. Alta vigilancia de Sernapesca. Si lo mencionan, es tema serio.</div>
+  </div>
+
+  <div class="glos-item" data-terms="srs piscirickettsiosis bacteria mortalidad antibioticos endemica">
+    <div class="glos-term">SRS / Piscirickettsiosis</div>
+    <div class="glos-full">Enfermedad bacteriana endémica — principal causa de mortalidad en Chile</div>
+    <div class="glos-def">Aparece frecuentemente en informes de centros proveedores. Causa alta mortalidad y uso de antibióticos. Dato de contexto sanitario del lote recibido por Fishplus.</div>
+  </div>
+
+  <div class="glos-item" data-terms="caligus piojo mar parasito monitoreo">
+    <div class="glos-term">Caligus</div>
+    <div class="glos-full">Parásito (piojo de mar) — se monitorea y declara en SIFA</div>
+    <div class="glos-def">Indicador sanitario que puede venir en los documentos de trazabilidad del centro proveedor. Niveles altos generan tratamientos que se deben documentar por lote.</div>
+  </div>
+
+  <!-- CATEGORÍA: GAF / Administración -->
+  <div class="glos-cat" data-cat="gaf">ADMINISTRACIÓN Y FINANZAS (GAF)</div>
+
+  <div class="glos-item" data-terms="cierre mensual contabilidad conciliacion informe directorio">
+    <div class="glos-term">Cierre mensual</div>
+    <div class="glos-full">Consolidación contable al fin de mes — conciliación, costos, informe directorio</div>
+    <div class="glos-def">Muy intensivo en horas. Luis casi seguro lo mencionará como proceso doloroso. Candidato a Quick Win de análisis y generación automática de borrador con Gemini en Docs.</div>
+  </div>
+
+  <div class="glos-item" data-terms="costo kilo produccion metrica eficiencia directorio">
+    <div class="glos-term">Costo por kilo</div>
+    <div class="glos-full">Costo total de producción dividido por kilos procesados</div>
+    <div class="glos-def">Métrica de eficiencia operacional que el directorio monitorea mensualmente. Si Luis habla de reportes de costo por kilo, hay un proceso de consolidación de datos detrás — posible Quick Win.</div>
+  </div>
+
+  <div class="glos-item" data-terms="horas extra planilla rrhh operarios registro">
+    <div class="glos-term">Horas extra / Planilla RRHH</div>
+    <div class="glos-full">Registro de horas adicionales de operarios de planta</div>
+    <div class="glos-def">Proceso B identificado por Javier. Cruzan con ERP y RUTs. El Sanitizador ya fue validado con un caso real de lista de horas extra (14 reemplazos detectados). Quick Win construido.</div>
+  </div>
+
+  <div class="glos-item" data-terms="conciliacion bancaria movimientos cuentas mensual">
+    <div class="glos-term">Conciliación bancaria</div>
+    <div class="glos-full">Cruce entre movimientos bancarios reales y registros contables internos</div>
+    <div class="glos-def">Proceso mensual estándar del GAF. Tarea repetitiva y propensa a error. Candidato natural a asistencia con IA si los datos están disponibles en planillas.</div>
+  </div>
+
+  <div class="glos-item" data-terms="pago proveedores liquidacion centro peso calidad">
+    <div class="glos-term">Pago a proveedores</div>
+    <div class="glos-full">Liquidación a los centros de cultivo que proveen el salmón</div>
+    <div class="glos-def">Se basa en peso y calidad del lote recibido — debe coincidir con la guía de despacho. Si hay diferencia, hay disputa. El Limpiador detecta esas diferencias automáticamente.</div>
+  </div>
+
+  <div class="glos-item" data-terms="reporte directorio informe mensual quincenal produccion costos">
+    <div class="glos-term">Reporte a directorio</div>
+    <div class="glos-full">Informe mensual o quincenal que Luis prepara para el CEO y directorio</div>
+    <div class="glos-def">Si Luis tarda horas en prepararlo, hay Quick Win de automatización de borrador con Gemini en Docs. Es uno de los entregables con mayor visibilidad ejecutiva.</div>
+  </div>
+
+  <!-- CATEGORÍA: Geografía y cadena de valor -->
+  <div class="glos-cat" data-cat="cadena">CADENA DE VALOR Y GEOGRAFÍA</div>
+
+  <div class="glos-item" data-terms="smolt agua dulce piscicultura alevin crecimiento">
+    <div class="glos-term">Smolt</div>
+    <div class="glos-full">Pez que completó la etapa de agua dulce — listo para ir al mar</div>
+    <div class="glos-def">No es relevante para Fishplus directamente (lo maneja el proveedor), pero Javier puede mencionarlo al describir la cadena. Reconocerlo sin pedir explicación muestra que entiendes el negocio.</div>
+  </div>
+
+  <div class="glos-item" data-terms="centro cultivo jaula mar engorda concesion">
+    <div class="glos-term">Centro de cultivo</div>
+    <div class="glos-full">Instalación marina donde los peces crecen en jaulas hasta la cosecha</div>
+    <div class="glos-def">Los proveedores de Fishplus. Cada centro genera los documentos de trazabilidad (FCR, biomasa, mortalidad) que acompañan al lote que llega a la planta.</div>
+  </div>
+
+  <div class="glos-item" data-terms="acs agrupacion concesiones sanitaria zona geografica">
+    <div class="glos-term">ACS</div>
+    <div class="glos-full">Agrupación de Concesiones — gestión sanitaria coordinada por zona</div>
+    <div class="glos-def">Si hay brote en un ACS, puede afectar a varios proveedores de Fishplus simultáneamente. Si lo mencionan es señal de que están evaluando riesgo de abastecimiento.</div>
+  </div>
+
+  <div id="glos-empty" class="glos-empty" style="display:none;">
+    <div style="font-size:32px; margin-bottom:10px;">🔍</div>
+    <div>Sin resultados para "<span id="glos-query"></span>"</div>
+    <div style="font-size:12px; margin-top:6px; color:var(--muted);">Anota ese término en la pestaña Notas</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: NOTAS (reemplaza libreta)
+══════════════════════════════════════════════════ -->
+<div id="notas" class="panel">
+
+  <div class="nota">
+    <span class="nota-label">Reemplaza la libreta</span>
+    <p>Toma notas aquí durante la visita. Se guardan automáticamente en el navegador — no se pierden si cambias de pestaña. Úsala para capturar nombres, términos desconocidos, observaciones de planta.</p>
+  </div>
+
+  <div class="sec">Nombres y candidatos a Champion</div>
+  <textarea id="nota-nombres" class="nota-textarea" placeholder="Nombres que escuchas, rol que tienen, por qué los marcaste..." oninput="guardar('nota-nombres')"></textarea>
+
+  <div class="sec">Términos que no reconocí</div>
+  <textarea id="nota-terminos" class="nota-textarea" placeholder="Palabras o nombres que usaron y que no encontraste en el glosario..." oninput="guardar('nota-terminos')"></textarea>
+
+  <div class="sec">Observaciones de planta</div>
+  <textarea id="nota-planta" class="nota-textarea nota-tall" placeholder="Lo que viste: pantallas abiertas, documentos en papel, fricciones visibles, cómo fluye la información entre áreas..." oninput="guardar('nota-planta')"></textarea>
+
+  <div class="sec">Preguntas pendientes para la oficina</div>
+  <textarea id="nota-preguntas" class="nota-textarea" placeholder="Cosas que surgieron en planta que quieres profundizar con Javier en la reunión de oficina..." oninput="guardar('nota-preguntas')"></textarea>
+
+  <div class="sec">Datos clave confirmados</div>
+  <textarea id="nota-datos" class="nota-textarea" placeholder="Lotes por semana: ___&#10;Sistema ERP / herramienta: ___&#10;Temporada (alta/normal/baja): ___&#10;Champion candidato: ___" oninput="guardar('nota-datos')"></textarea>
+
+  <button class="btn-limpiar" onclick="limpiarNotas()">Limpiar todas las notas</button>
+  <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:8px;">Las notas se guardan localmente en este navegador</p>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANEL: WHATSAPP
+══════════════════════════════════════════════════ -->
+<div id="wa" class="panel">
+
+  <div class="nota">
+    <span class="nota-label">Cuándo enviarlo</span>
+    <p>Mismo día en la tarde — máximo a la mañana siguiente. No puede sonar a primer párrafo de propuesta comercial. Debe sonar a que lo pasaste bien y te quedaste pensando.</p>
+  </div>
+
+  <div class="sec">Mensaje base</div>
+  <div class="wa-box">
+    <p>Javier, gracias por el día — en serio.</p>
+    <p>Ver la planta me cambió completamente la perspectiva del proyecto. Me llevo mucho contexto que no habría podido conseguir de otra forma.</p>
+    <p class="wa-placeholder">[Agrega algo específico que observaste o que te llamó la atención — esto lo personaliza y muestra que estuviste presente]</p>
+    <p>Me coordino con Luis esta semana. Si hay algo que quieras que tenga en mente antes de esa reunión, avísame.</p>
+  </div>
+
+  <div class="sec">Si no hubo reunión en oficina — agrega al final</div>
+  <div class="wa-box">
+    <p>Quedé con ganas de mostrarte algo que preparé — ¿tienes 30 minutos esta semana para una videollamada corta?</p>
+  </div>
+
+  <div class="nota warn">
+    <span class="nota-label">⚠ Tono</span>
+    <p>Cálido y concreto. Tres frases máximo de fondo, más el elemento personal. Si suena a consultor, está mal.</p>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  UB-FP-REF-002 v1.0 · Walter Urbina Briones · URBrain Consulting SpA<br>
+  Uso interno — no compartir con el cliente · Funciona sin conexión
+</div>
+
+<script>
+// ── NAVEGACIÓN ──
+function show(id, tab) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  tab.classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'notas') cargarNotas();
+}
+
+// ── CHECKLIST ──
+function toggle(el) { el.classList.toggle('done'); }
+
+// ── GLOSARIO: búsqueda ──
+function filtrarGlosario() {
+  const q = document.getElementById('glos-input').value.trim().toLowerCase();
+  const items = document.querySelectorAll('.glos-item');
+  const cats  = document.querySelectorAll('.glos-cat');
+  let visibles = 0;
+
+  // reset highlights
+  items.forEach(it => {
+    it.querySelectorAll('mark.hl').forEach(m => {
+      m.outerHTML = m.innerHTML;
+    });
+  });
+
+  if (!q) {
+    items.forEach(it => { it.style.display = ''; it.classList.remove('open'); });
+    cats.forEach(c  => c.style.display = '');
+    document.getElementById('glos-empty').style.display = 'none';
+    document.getElementById('glos-contador').textContent = '';
+    return;
+  }
+
+  items.forEach(it => {
+    const terms = (it.dataset.terms || '').toLowerCase();
+    const term  = it.querySelector('.glos-term').textContent.toLowerCase();
+    const full  = it.querySelector('.glos-full').textContent.toLowerCase();
+    const def   = it.querySelector('.glos-def').textContent.toLowerCase();
+    const match = terms.includes(q) || term.includes(q) || full.includes(q) || def.includes(q);
+
+    it.style.display = match ? '' : 'none';
+    if (match) {
+      it.classList.add('open');
+      visibles++;
+      // highlight en term y full
+      ['glos-term','glos-full'].forEach(cls => {
+        const el = it.querySelector('.' + cls);
+        el.innerHTML = el.textContent.replace(
+          new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi'),
+          '<mark class="hl">$1</mark>'
+        );
+      });
+    } else {
+      it.classList.remove('open');
+    }
+  });
+
+  // ocultar categorías sin hijos visibles
+  cats.forEach(cat => {
+    let next = cat.nextElementSibling;
+    let tiene = false;
+    while (next && !next.classList.contains('glos-cat') && next.id !== 'glos-empty') {
+      if (next.classList.contains('glos-item') && next.style.display !== 'none') { tiene = true; break; }
+      next = next.nextElementSibling;
+    }
+    cat.style.display = tiene ? '' : 'none';
+  });
+
+  const empty = document.getElementById('glos-empty');
+  empty.style.display = visibles === 0 ? 'block' : 'none';
+  document.getElementById('glos-query').textContent = q;
+  document.getElementById('glos-contador').textContent =
+    visibles > 0 ? visibles + ' término' + (visibles !== 1 ? 's' : '') : '';
+}
+
+function limpiarGlosario() {
+  document.getElementById('glos-input').value = '';
+  filtrarGlosario();
+}
+
+// expandir/colapsar al tocar un item sin búsqueda activa
+document.querySelectorAll && document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.glos-item').forEach(it => {
+    it.addEventListener('click', () => {
+      const q = document.getElementById('glos-input').value.trim();
+      if (!q) it.classList.toggle('open');
+    });
+  });
+});
+
+// ── NOTAS PERSISTENTES (localStorage) ──
+const NOTA_KEYS = ['nota-nombres','nota-terminos','nota-planta','nota-preguntas','nota-datos'];
+
+function guardar(id) {
+  try {
+    localStorage.setItem('ub-terreno-' + id, document.getElementById(id).value);
+  } catch(e) {}
+}
+
+function cargarNotas() {
+  NOTA_KEYS.forEach(id => {
+    try {
+      const val = localStorage.getItem('ub-terreno-' + id);
+      if (val !== null) document.getElementById(id).value = val;
+    } catch(e) {}
+  });
+}
+
+function limpiarNotas() {
+  if (!confirm('¿Borrar todas las notas? Esta acción no se puede deshacer.')) return;
+  NOTA_KEYS.forEach(id => {
+    try { localStorage.removeItem('ub-terreno-' + id); } catch(e) {}
+    document.getElementById(id).value = '';
+  });
+}
+
+// cargar notas al inicio por si la pestaña ya está activa
+cargarNotas();
+</script>
+</body>
+</html>
