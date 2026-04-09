@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fishplus — Tablero Ejecutivo · URBrain IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════
+   Fishplus Tablero Ejecutivo — URBrain × Fishplus
+   UB-FP-VIS-002 v1.0 · Abril 2026
+   ════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:    #254C76;
+  --blue:    #38698A;
+  --teal:    #52B1C8;
+  --silver:  #B0B8BE;
+  --dark:    #0A1628;
+  --darker:  #060E1A;
+  --border:  rgba(82,177,200,.13);
+
+  --c-prod:  #4CAF82;
+  --c-traz:  #52B1C8;
+  --c-san:   #E05252;
+  --c-rrhh:  #E8A838;
+  --c-gaf:   #7AB3D4;
+  --c-log:   #A78BFA;
+
+  --claude:  #D97757;
+  --gemini:  #4A8EF5;
+
+  --sl-green:  #4CAF82;
+  --sl-yellow: #E8A838;
+  --sl-red:    #E05252;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--darker);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 12% 25%, rgba(37,76,118,.4) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 88% 72%, rgba(82,177,200,.09) 0%, transparent 55%);
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(82,177,200,.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(82,177,200,.022) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+
+.app { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+/* ── HEADER ── */
+.hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 28px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: rgba(6,14,26,.8);
+  backdrop-filter: blur(18px);
+  gap: 16px;
+}
+.hdr-left { display: flex; align-items: baseline; gap: 12px; }
+.hdr-brand { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; letter-spacing: .02em; }
+.hdr-brand em { color: var(--teal); font-style: normal; }
+.hdr-client { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--silver); }
+
+.hdr-tools { display: flex; align-items: center; gap: 8px; }
+.tool-badge {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: 20px;
+  font-size: 10px; font-weight: 600; letter-spacing: .06em;
+  border: 1px solid;
+}
+.tool-badge.claude { color: var(--claude); border-color: rgba(217,119,87,.3); background: rgba(217,119,87,.08); }
+.tool-badge.gemini { color: var(--gemini); border-color: rgba(74,142,245,.3); background: rgba(74,142,245,.08); }
+.tool-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.hdr-right { display: flex; align-items: center; gap: 16px; }
+.hdr-ref { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(176,184,190,.45); }
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(76,175,130,.1); border: 1px solid rgba(76,175,130,.25);
+  border-radius: 20px; padding: 4px 11px;
+  font-size: 9px; font-weight: 600; color: var(--c-prod); letter-spacing: .08em;
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-prod); animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
+
+/* ── BANNER EJECUTIVO ── */
+.exec-banner {
+  display: flex; align-items: stretch; gap: 0;
+  background: rgba(6,14,26,.6);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+}
+.banner-metric {
+  flex: 1; display: flex; align-items: center; gap: 14px;
+  padding: 10px 22px;
+  border-right: 1px solid var(--border);
+  position: relative; overflow: hidden;
+  transition: background .2s;
+}
+.banner-metric:last-child { border-right: none; }
+.banner-metric::before {
+  content: '';
+  position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+  background: var(--metric-color, var(--teal));
+}
+.banner-metric:hover { background: rgba(82,177,200,.04); }
+.bm-icon { font-size: 18px; flex-shrink: 0; }
+.bm-body { flex: 1; min-width: 0; }
+.bm-label { font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: var(--silver); margin-bottom: 2px; }
+.bm-val-row { display: flex; align-items: baseline; gap: 5px; }
+.bm-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; line-height: 1; }
+.bm-suffix { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--silver); }
+.bm-note { font-size: 9px; color: rgba(176,184,190,.5); margin-top: 1px; }
+
+/* ── SEMÁFORO BAR ── */
+.semaforo-bar {
+  border-bottom: 1px solid var(--border);
+  background: rgba(6,14,26,.6);
+  flex-shrink: 0;
+}
+.semaforo-toggle {
+  background: linear-gradient(90deg, rgba(82,177,200,.08), transparent);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; border: none; cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: .08em; color: #fff;
+  transition: background .2s;
+}
+.semaforo-toggle:hover { background: linear-gradient(90deg, rgba(82,177,200,.13), transparent); }
+.semaforo-content { padding: 12px 28px 16px; }
+.semaforo-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; max-width: 1100px;
+}
+
+/* ── VIEW TABS ── */
+.view-tabs {
+  display: flex; align-items: center; gap: 0;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: rgba(6,14,26,.5);
+}
+.view-tab {
+  padding: 10px 18px;
+  font-size: 11px; font-weight: 500; letter-spacing: .04em;
+  cursor: pointer; border: none; background: transparent;
+  color: var(--silver);
+  border-bottom: 2px solid transparent;
+  transition: all .2s; white-space: nowrap;
+}
+.view-tab:hover { color: #fff; }
+.view-tab.active { color: #fff; border-bottom-color: var(--teal); }
+
+/* ── MAIN ── */
+.main { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+
+/* ── STRIP WRAPPER (Mapa view) ── */
+.strip-wrapper { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; height: 100%; }
+.strip-scroll-row { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+.module-strip {
+  flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden;
+  padding: 20px 28px; display: flex; gap: 14px; align-items: stretch;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(82,177,200,.18) transparent;
+}
+.module-strip::-webkit-scrollbar { height: 4px; }
+.module-strip::-webkit-scrollbar-thumb { background: rgba(82,177,200,.2); border-radius: 4px; }
+
+.scroll-hint {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(10,22,40,.9); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 10; transition: opacity .2s; color: var(--teal);
+}
+.scroll-hint:hover { background: rgba(37,76,118,.8); }
+.scroll-hint.left { left: 30px; }
+.scroll-hint.right { right: 6px; }
+.scroll-hint.hidden { opacity: 0; pointer-events: none; }
+
+.scroll-progress { height: 2px; background: rgba(255,255,255,.04); flex-shrink: 0; margin: 0 28px 6px; border-radius: 2px; overflow: hidden; }
+.scroll-thumb { height: 100%; background: linear-gradient(90deg,var(--teal),var(--c-log)); border-radius: 2px; transition: width .1s,margin-left .1s; }
+
+.kpi-card {
+  border-radius: 9px; border: 1px solid var(--border);
+  background: rgba(82,177,200,.05);
+  padding: 11px 13px; position: relative; overflow: hidden;
+  transition: border-color .2s, opacity .3s;
+}
+.kpi-card.inactive { opacity: .28; filter: grayscale(.6); }
+.kpi-card .k-lbl { font-size: 9px; color: var(--silver); letter-spacing: .06em; margin-bottom: 4px; }
+.kpi-card .k-val { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; line-height: 1; margin-bottom: 2px; }
+.kpi-card .k-unit { font-size: 9px; color: var(--silver); }
+.kpi-card .k-delta { font-size: 10px; margin-top: 5px; display: flex; align-items: center; gap: 3px; }
+.kpi-locked { font-size: 10px; color: rgba(176,184,190,.35); text-align: center; padding: 7px; border: 1px dashed rgba(176,184,190,.1); border-radius: 7px; }
+.delta-up { color: var(--c-prod); } .delta-down { color: var(--c-san); } .delta-neu { color: var(--c-rrhh); }
+
+/* ── SEMÁFORO ── */
+.semaforo-wrap {
+  position: absolute; top: 10px; right: 12px;
+  display: flex; align-items: center; gap: 5px;
+}
+.semaforo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.semaforo-dot.green  { background: var(--sl-green);  box-shadow: 0 0 6px var(--sl-green); }
+.semaforo-dot.yellow { background: var(--sl-yellow); box-shadow: 0 0 6px var(--sl-yellow); animation: blink 2.5s ease infinite; }
+.semaforo-dot.red    { background: var(--sl-red);    box-shadow: 0 0 6px var(--sl-red); animation: blink 1.5s ease infinite; }
+.semaforo-dot.neutral { background: rgba(176,184,190,.25); }
+.semaforo-label { font-size: 8px; letter-spacing: .08em; }
+.semaforo-label.green  { color: var(--sl-green); }
+.semaforo-label.yellow { color: var(--sl-yellow); }
+.semaforo-label.red    { color: var(--sl-red); }
+.semaforo-label.neutral { color: rgba(176,184,190,.4); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.k-umbral {
+  font-size: 8px; color: rgba(176,184,190,.4); margin-top: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── MODULE CARD ── */
+.mod-card {
+  flex-shrink: 0; width: 255px;
+  border-radius: 13px; border: 1px solid var(--border);
+  background: rgba(10,22,40,.7); backdrop-filter: blur(12px);
+  overflow: hidden; transition: border-color .25s, transform .2s, box-shadow .25s;
+  cursor: pointer; position: relative;
+  animation: fadeUp .4s ease both;
+}
+.mod-card:nth-child(1){animation-delay:.04s} .mod-card:nth-child(2){animation-delay:.10s}
+.mod-card:nth-child(3){animation-delay:.16s} .mod-card:nth-child(4){animation-delay:.22s}
+.mod-card:nth-child(5){animation-delay:.28s} .mod-card:nth-child(6){animation-delay:.34s}
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+.mod-card.inactive { opacity: .4; filter: grayscale(.5); cursor: default; }
+.mod-card:not(.inactive):hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(0,0,0,.45); }
+.mod-card.selected { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(0,0,0,.45); }
+
+/* inactive tooltip */
+.mod-card.inactive:hover { opacity: .6; filter: grayscale(.3); }
+.mod-projection {
+  margin: 0 14px 12px; padding: 7px 10px; border-radius: 7px;
+  background: rgba(82,177,200,.05); border: 1px dashed rgba(82,177,200,.2);
+  font-size: 10px; color: rgba(82,177,200,.6); line-height: 1.45;
+  display: flex; gap: 7px; align-items: flex-start;
+}
+
+.mod-top-bar { height: 3px; width: 100%; }
+
+.mod-head-row { display: flex; align-items: center; gap: 11px; padding: 14px 14px 0; }
+.mod-icon-wrap {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; flex-shrink: 0; border: 2px solid;
+  transition: box-shadow .2s;
+}
+.mod-card.selected .mod-icon-wrap,
+.mod-card:not(.inactive):hover .mod-icon-wrap { box-shadow: 0 0 16px currentColor; }
+.mod-num { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .15em; }
+.mod-name { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; line-height: 1.2; }
+.mod-sub { font-size: 9px; color: var(--silver); margin-top: 2px; }
+
+.mod-profiles { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 14px 0; }
+.profile-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 20px;
+  font-size: 9px; font-weight: 500; letter-spacing: .04em;
+  border: 1px solid; white-space: nowrap;
+}
+.profile-chip.claude { color: var(--claude); border-color: rgba(217,119,87,.28); background: rgba(217,119,87,.08); }
+.profile-chip.gemini { color: var(--gemini); border-color: rgba(74,142,245,.28); background: rgba(74,142,245,.08); }
+.chip-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+.pilot-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin: 8px 14px 0; padding: 3px 9px; border-radius: 20px;
+  font-size: 9px; font-weight: 600; letter-spacing: .1em;
+  background: rgba(82,177,200,.1); border: 1px solid rgba(82,177,200,.22); color: var(--teal);
+}
+.pilot-badge.active-pulse { animation: pilot-glow 2s ease infinite; }
+@keyframes pilot-glow {
+  0%,100%{border-color:rgba(82,177,200,.22);box-shadow:none}
+  50%{border-color:rgba(82,177,200,.6);box-shadow:0 0 12px rgba(82,177,200,.2)}
+}
+
+.mod-bullets { padding: 10px 14px 12px; list-style: none; display: flex; flex-direction: column; gap: 0; }
+.mod-bullets li {
+  font-size: 10.5px; color: var(--silver);
+  padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+  display: flex; align-items: flex-start; gap: 7px; line-height: 1.35;
+}
+.mod-bullets li:last-child { border-bottom: none; }
+
+.pain-tag {
+  margin: 0 14px 12px; padding: 7px 10px; border-radius: 7px;
+  background: rgba(224,82,82,.06); border: 1px solid rgba(224,82,82,.18);
+  font-size: 10px; color: #e8a0a0; line-height: 1.45; display: flex; gap: 7px;
+}
+
+/* ── PROFILES VIEW ── */
+.profiles-view { flex: 1; overflow: auto; padding: 24px 28px; display: none; }
+.profiles-view.active { display: block; }
+
+.profiles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; }
+
+.tool-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.tool-icon { font-size: 22px; }
+.tool-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; }
+.tool-desc { font-size: 10px; color: var(--silver); margin-top: 2px; }
+
+.profile-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(10,22,40,.5);
+  margin-bottom: 8px; cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.profile-row:hover { background: rgba(16,30,54,.7); }
+.profile-row.claude-row:hover { border-color: rgba(217,119,87,.3); }
+.profile-row.gemini-row:hover { border-color: rgba(74,142,245,.3); }
+
+.profile-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; border: 2px solid;
+}
+.claude-row .profile-avatar { border-color: rgba(217,119,87,.4); background: rgba(217,119,87,.1); }
+.gemini-row .profile-avatar { border-color: rgba(74,142,245,.4); background: rgba(74,142,245,.1); }
+
+.profile-info { flex: 1; }
+.profile-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.claude-row .profile-name { color: var(--claude); }
+.gemini-row .profile-name { color: var(--gemini); }
+.profile-area { font-size: 10px; color: var(--silver); margin-bottom: 5px; }
+.profile-uses { display: flex; flex-wrap: wrap; gap: 4px; }
+.use-tag {
+  font-size: 9px; padding: 2px 7px; border-radius: 4px;
+  color: rgba(255,255,255,.6); background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+/* ── KPIs FULL VIEW ── */
+.kpis-view { flex: 1; overflow-y: auto; padding: 24px 28px; display: none; }
+.kpis-view.active { display: block; }
+.kpis-view-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--silver); margin-bottom: 16px; }
+
+.kpis-full-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 960px; }
+.kpi-area-header {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 9px;
+  padding: 7px 0 5px; border-bottom: 1px solid var(--border); margin-bottom: 2px;
+}
+.kpi-area-header-icon { font-size: 15px; }
+.kpi-area-header-name { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.kpi-area-header-sub { font-size: 9px; color: var(--silver); margin-left: 4px; }
+
+/* ── HOJA DE RUTA VIEW ── */
+.roadmap-view { flex: 1; overflow-y: auto; padding: 24px 28px; display: none; }
+.roadmap-view.active { display: block; }
+
+.roadmap-header { margin-bottom: 20px; }
+.roadmap-header h2 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .04em; }
+.roadmap-header p { font-size: 11px; color: var(--silver); margin-top: 4px; }
+
+.roadmap-timeline { display: flex; flex-direction: column; gap: 0; max-width: 960px; position: relative; }
+
+/* Single continuous vertical track behind all phases */
+.roadmap-timeline::before {
+  content: '';
+  position: absolute; top: 52px; bottom: 52px; left: 44px;
+  width: 2px;
+  background: linear-gradient(to bottom,
+    rgba(82,177,200,.4) 0%,
+    rgba(232,168,56,.3) 40%,
+    rgba(123,179,212,.2) 70%,
+    rgba(167,139,250,.1) 100%);
+  pointer-events: none; z-index: 0;
+}
+
+.roadmap-phase {
+  display: grid; grid-template-columns: 90px 1fr;
+  gap: 0;
+  position: relative;
+}
+
+.phase-spine {
+  display: flex; flex-direction: column; align-items: center;
+  padding-top: 12px;
+  position: relative; z-index: 1;
+}
+.phase-num-circle {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800;
+  border: 2px solid; flex-shrink: 0;
+  position: relative; z-index: 1;
+  background: var(--darker);
+}
+.phase-weeks {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px; letter-spacing: .1em;
+  color: var(--silver); margin-top: 5px; text-align: center;
+}
+
+.phase-body {
+  padding: 12px 0 24px 20px;
+}
+
+.phase-card {
+  border-radius: 12px; border: 1px solid var(--border);
+  background: rgba(10,22,40,.65); backdrop-filter: blur(10px);
+  overflow: hidden;
+  animation: fadeUp .4s ease both;
+}
+
+.phase-card-top { padding: 14px 18px 12px; }
+.phase-status-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.phase-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 9px; font-weight: 700; letter-spacing: .12em;
+  border: 1px solid;
+}
+.phase-badge.en-curso {
+  background: rgba(82,177,200,.12); border-color: rgba(82,177,200,.35);
+  color: var(--teal); animation: pilot-glow 2s ease infinite;
+}
+.phase-badge.proximo {
+  background: rgba(232,168,56,.08); border-color: rgba(232,168,56,.3);
+  color: var(--c-rrhh);
+}
+.phase-badge.planificado {
+  background: rgba(176,184,190,.06); border-color: rgba(176,184,190,.15);
+  color: var(--silver);
+}
+.phase-badge.completado {
+  background: rgba(76,175,130,.1); border-color: rgba(76,175,130,.3);
+  color: var(--c-prod);
+}
+.phase-badge-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+}
+.phase-fecha { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(176,184,190,.4); }
+
+.phase-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.phase-desc { font-size: 10.5px; color: var(--silver); line-height: 1.55; margin-bottom: 12px; }
+
+.phase-modules-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.phase-module-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 6px;
+  font-size: 9px; font-weight: 600; letter-spacing: .06em;
+  border: 1px solid rgba(82,177,200,.2); background: rgba(82,177,200,.06);
+  color: rgba(255,255,255,.6);
+}
+
+.phase-metrics {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  background: rgba(6,14,26,.3);
+}
+.phase-metric { }
+.pm-label { font-size: 8px; letter-spacing: .15em; text-transform: uppercase; color: rgba(176,184,190,.5); margin-bottom: 3px; }
+.pm-val { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+.pm-sub { font-size: 9px; color: var(--silver); }
+
+/* ── DETAIL PANEL ── */
+.area-detail {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(8,18,34,.97); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  transform: translateY(100%); transition: transform .35s cubic-bezier(.4,0,.2,1);
+  z-index: 100; max-height: 44vh; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.area-detail.open { transform: translateY(0); }
+
+.detail-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 22px 11px 28px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0; position: sticky; top: 0;
+  background: rgba(8,18,34,.98); z-index: 1;
+}
+.detail-header-left { display: flex; align-items: center; gap: 10px; }
+
+.detail-close {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 13px; border-radius: 6px;
+  background: rgba(176,184,190,.06); border: 1px solid var(--border);
+  cursor: pointer; color: var(--silver);
+  font-size: 11px; font-family: 'Inter', sans-serif;
+  transition: background .2s, color .2s; white-space: nowrap;
+}
+.detail-close:hover { background: rgba(176,184,190,.14); color: #fff; }
+
+.detail-inner { padding: 14px 28px 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; max-width: 1100px; }
+.detail-col h4 { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 9px; font-weight: 600; }
+.detail-col ul { list-style: none; }
+.detail-col ul li { font-size: 11px; color: var(--silver); padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.04); display: flex; gap: 7px; line-height: 1.4; }
+.detail-col ul li::before { content: '·'; flex-shrink: 0; color: var(--silver); opacity: .4; }
+
+/* ── SCROLLBAR GLOBAL ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(82,177,200,.15); border-radius: 4px; }
+
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE MÓVIL — max-width 768px
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* GENERAL */
+  body { overflow-x: hidden; }
+
+  /* HEADER */
+  .hdr { padding: 10px 16px; }
+  .hdr-ref { display: none; }
+  .hdr-tools { display: none; }
+  .hdr-brand { font-size: 13px; }
+  .hdr-client { font-size: 9px; }
+
+  /* BANNER EJECUTIVO */
+  .exec-banner { flex-direction: column; }
+  .banner-metric {
+    flex: none; width: 100%;
+    padding: 12px 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .banner-metric:last-child { border-bottom: none; }
+  .bm-val { font-size: 28px; }
+
+  /* SEMÁFORO */
+  .semaforo-toggle { padding: 6px 16px; }
+  .semaforo-content { padding: 12px 16px 16px; }
+  .semaforo-grid { grid-template-columns: 1fr; }
+
+  /* TABS */
+  .view-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 8px;
+  }
+  .view-tab {
+    padding: 10px 12px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  /* MAPA DE PROCESOS */
+  .mod-card { width: 85vw; padding: 16px; }
+  .module-strip { padding: 16px; }
+
+  /* VISTA INDICADORES CEO */
+  .kpis-view { padding: 16px; }
+  .kpis-full-grid { grid-template-columns: 1fr; }
+
+  /* VISTA PERFILES */
+  .profiles-view { padding: 16px; }
+  .profiles-grid { grid-template-columns: 1fr; }
+
+  /* VISTA HOJA DE RUTA */
+  .roadmap-view { padding: 16px; }
+  .roadmap-phase { grid-template-columns: 1fr; width: 100%; }
+  .phase-spine { flex-direction: row; align-items: center; gap: 10px; padding-top: 0; margin-bottom: 8px; }
+  .phase-weeks { margin-top: 0; }
+  .phase-body { padding: 0 0 20px 0; }
+  .roadmap-timeline::before { display: none; }
+
+  /* PANEL DETALLE INFERIOR */
+  .area-detail { max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .detail-inner {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ HEADER ══════════════════════════════════════════════ -->
+  <header class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-brand">URBrain <em>×</em> Fishplus</div>
+      <div class="hdr-client">Tablero Ejecutivo · Piloto IA</div>
+    </div>
+    <div class="hdr-tools">
+      <div class="tool-badge claude"><div class="tool-dot"></div>Claude</div>
+      <div class="tool-badge gemini"><div class="tool-dot"></div>Gemini + Workspace</div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-ref">UB-FP-VIS-002 v1.0 · Abril 2026</div>
+      <div class="live-badge"><div class="live-dot"></div>PILOTO ACTIVO</div>
+    </div>
+  </header>
+
+  <!-- ══ BANNER EJECUTIVO ═════════════════════════════════════ -->
+  <div class="exec-banner" id="execBanner" style="display:none"></div>
+
+  <!-- ══ SEMÁFORO DESPLEGABLE ═════════════════════════════════ -->
+  <div class="semaforo-bar" id="semaforoBar">
+    <button class="semaforo-toggle" onclick="toggleSemaforo()">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:14px">📊</span>
+        <span>INDICADORES · SEMÁFORO EJECUTIVO</span>
+      </div>
+      <div id="semaforoArrow" style="font-size:11px;font-weight:400;color:var(--silver);font-family:'Inter',sans-serif">Ver resumen →</div>
+    </button>
+    <div class="semaforo-content" id="semaforoContent" style="display:none">
+      <div class="semaforo-grid" id="semaforoGrid"></div>
+    </div>
+  </div>
+
+  <!-- ══ TABS ═════════════════════════════════════════════════ -->
+  <nav class="view-tabs">
+    <button class="view-tab" data-view="mapa"     onclick="setView('mapa',    this)">🗺 Mapa de Procesos</button>
+    <button class="view-tab" data-view="perfiles" onclick="setView('perfiles',this)">👤 Perfiles &amp; Herramientas</button>
+    <button class="view-tab" data-view="kpis"     onclick="setView('kpis',    this)">📊 Indicadores CEO</button>
+    <button class="view-tab" data-view="ruta"     onclick="setView('ruta',    this)">🛣 Hoja de Ruta</button>
+  </nav>
+
+  <!-- ══ MAIN ═════════════════════════════════════════════════ -->
+  <div class="main" id="mainArea">
+
+    <!-- ── VISTA 1: MAPA DE PROCESOS ── -->
+    <div id="view-mapa" class="strip-wrapper" style="display:none">
+      <div class="strip-scroll-row">
+        <button class="scroll-hint left hidden" id="btnL" onclick="scrollStrip(-1)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="module-strip" id="strip"></div>
+        <button class="scroll-hint right" id="btnR" onclick="scrollStrip(1)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+      <div class="scroll-progress"><div class="scroll-thumb" id="scrollThumb"></div></div>
+    </div>
+
+    <!-- ── VISTA 2: PERFILES & HERRAMIENTAS ── -->
+    <div id="view-perfiles" class="profiles-view" style="display:none">
+      <div class="profiles-grid" id="profilesGrid"></div>
+    </div>
+
+    <!-- ── VISTA 3: INDICADORES CEO ── -->
+    <div id="view-kpis" class="kpis-view" style="display:none">
+      <div class="kpis-view-title">Indicadores por Área · Semáforo ejecutivo</div>
+      <div class="kpis-full-grid" id="kpisFullGrid"></div>
+    </div>
+
+    <!-- ── VISTA 4: HOJA DE RUTA ── -->
+    <div id="view-ruta" class="roadmap-view" style="display:none">
+      <div class="roadmap-header">
+        <h2>Hoja de Ruta — Piloto IA Fishplus</h2>
+        <p>Fases de activación por módulo · Semanas 1–7+ · URBrain Consulting</p>
+      </div>
+      <div class="roadmap-timeline" id="roadmapTimeline"></div>
+    </div>
+
+  </div>
+
+  <!-- ══ DETAIL PANEL (slide up desde Mapa) ═══════════════════ -->
+  <div class="area-detail" id="areaDetail">
+    <div class="detail-header" id="detailHeader"></div>
+    <div class="detail-inner" id="detailInner"></div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  KPIs por área — valores ilustrativos (actualizar con datos reales)
+//  semaforo: 'green' | 'yellow' | 'red'
+//  Umbrales basados en estándares salmonicultura chilena
+// ─────────────────────────────────────────────────────────────
+const KPIS_DATA = {
+
+  traz: [
+    {
+      label: 'Lotes en seguimiento',
+      val: '24',
+      unit: 'lotes activos',
+      color: '#52B1C8',
+      delta: '+3 este mes',
+      cls: 'delta-up',
+      semaforo: 'green',
+      umbral: null
+    },
+    {
+      label: 'Tiempo compilación',
+      val: '4.5h',
+      unit: 'hoy → objetivo 15 min con IA',
+      color: '#E8A838',
+      delta: '▼ −94% proyectado con IA',
+      cls: 'delta-up',
+      semaforo: 'yellow',
+      umbral: 'Objetivo: < 30 min por lote'
+    },
+    {
+      label: 'Alertas pendientes',
+      val: '3',
+      unit: 'lotes sin historial completo',
+      color: '#E05252',
+      delta: '⚠ Requiere revisión urgente',
+      cls: 'delta-down',
+      semaforo: 'red',
+      umbral: 'Umbral crítico: 0 alertas activas'
+    },
+  ],
+
+  prod: [
+    {
+      label: 'FCR promedio flota',
+      val: '1.28',
+      unit: 'factor conv. alimento',
+      color: '#4CAF82',
+      delta: 'Dentro de rango normal',
+      cls: 'delta-up',
+      semaforo: 'green',
+      umbral: 'Alerta si FCR > 1.35'
+    },
+    {
+      label: 'Biomasa bajo manejo',
+      val: '2,847',
+      unit: 'toneladas · referencial',
+      color: '#4CAF82',
+      delta: 'Dato referencial piloto',
+      cls: 'delta-neu',
+      semaforo: 'green',
+      umbral: null
+    },
+    {
+      label: 'Mortalidad acumulada',
+      val: '4.2%',
+      unit: 'acumulado período actual',
+      color: '#4CAF82',
+      delta: 'Dentro de umbral',
+      cls: 'delta-up',
+      semaforo: 'green',
+      umbral: 'Alerta crítica si > 6%'
+    },
+  ],
+
+  san: [
+    {
+      label: 'Centros con alerta activa',
+      val: '1',
+      unit: 'de 6 centros',
+      color: '#E8A838',
+      delta: 'Seguimiento activo',
+      cls: 'delta-neu',
+      semaforo: 'yellow',
+      umbral: 'Alerta: > 2 centros simultáneos'
+    },
+    {
+      label: 'Días sin eventos críticos',
+      val: '12',
+      unit: 'días promedio flota',
+      color: '#4CAF82',
+      delta: 'Tendencia positiva',
+      cls: 'delta-up',
+      semaforo: 'green',
+      umbral: null
+    },
+  ],
+
+  rrhh: [
+    {
+      label: 'HH extra / centro (sem.)',
+      val: '—',
+      unit: 'disponible en Fase 3',
+      color: '#E8A838',
+      delta: '',
+      cls: '',
+      semaforo: 'neutral',
+      umbral: null
+    },
+    {
+      label: 'Dotación planificada vs real',
+      val: '—',
+      unit: 'disponible en Fase 3',
+      color: '#E8A838',
+      delta: '',
+      cls: '',
+      semaforo: 'neutral',
+      umbral: null
+    },
+  ],
+
+  gaf: [
+    {
+      label: 'Costo / kg producido',
+      val: '—',
+      unit: 'disponible en Fase 2',
+      color: '#7AB3D4',
+      delta: '',
+      cls: '',
+      semaforo: 'neutral',
+      umbral: null
+    },
+    {
+      label: 'Presupuesto vs real',
+      val: '—',
+      unit: 'disponible en Fase 2',
+      color: '#7AB3D4',
+      delta: '',
+      cls: '',
+      semaforo: 'neutral',
+      umbral: null
+    },
+  ],
+
+  log: [
+    {
+      label: 'Cosecha proyectada 90d',
+      val: '—',
+      unit: 'disponible en Fase 4',
+      color: '#A78BFA',
+      delta: '',
+      cls: '',
+      semaforo: 'neutral',
+      umbral: null
+    },
+    {
+      label: 'Gap contratos vs stock',
+      val: '—',
+      unit: 'disponible en Fase 4',
+      color: '#A78BFA',
+      delta: '',
+      cls: '',
+      semaforo: 'neutral',
+      umbral: null
+    },
+  ],
+
+};
+
+// ─── Métricas del banner ejecutivo ───────────────────────────
+const BANNER_METRICS = [
+  {
+    label: 'Módulos activos',
+    val: '1',
+    suffix: '/ 6',
+    icon: '⚡',
+    color: '#52B1C8',
+    note: 'Trazabilidad en piloto'
+  },
+  {
+    label: 'Horas ahorradas estimadas',
+    val: '4.5h',
+    suffix: '/ semana',
+    icon: '⏱',
+    color: '#4CAF82',
+    note: 'Compilación trazabilidad'
+  },
+  {
+    label: 'Próximo hito',
+    val: 'Producción',
+    suffix: '— Semana 3',
+    icon: '🎯',
+    color: '#E8A838',
+    note: 'GAF + Dashboard biomasa'
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
+//  AREAS — Módulos de proceso Fishplus
+// ─────────────────────────────────────────────────────────────
+const AREAS = [
+  {
+    id: 'traz',
+    active: true,
+    pilot: true,
+    color: '#52B1C8',
+    icon: '🔗',
+    num: '01',
+    name: 'TRAZABILIDAD',
+    sub: 'Lote a lote · Sernapesca',
+    projection: null,
+    profiles: [
+      { name: 'Trazabilidad', tool: 'claude' },
+      { name: 'Jefa de Calidad', tool: 'gemini' },
+      { name: 'Gerente Técnico', tool: 'claude' },
+    ],
+    bullets: [
+      'Seguimiento lote a lote desde smolt',
+      'Compilación PDFs de centros → Sheets',
+      'Cumplimiento Sernapesca y SMA',
+      'Certificación para exportación',
+    ],
+    pain: 'PDFs de centros se consolidan a mano. Compilar un lote para auditoría toma 4.5 horas promedio.',
+    detail: [
+      {
+        label: 'Proceso hoy',
+        items: [
+          'PDFs por email desde cada centro',
+          'Extracción manual a planilla Excel',
+          'Validación y corrección de datos',
+          'Envío a GAF con días de retraso',
+        ]
+      },
+      {
+        label: 'KPIs objetivo',
+        items: [
+          'Lotes en seguimiento activo: 24',
+          'Tiempo compilación: 4.5h → 15 min',
+          'Alertas de cumplimiento pendientes',
+          'Lotes con historial completo: 100%',
+        ]
+      },
+      {
+        label: 'Quick Win IA',
+        items: [
+          'PDF → tabla estructurada (Claude)',
+          'Pipeline Claude → Google Sheets',
+          'Detección automática de inconsistencias',
+          'Resumen auditoría por lote generado',
+        ]
+      },
+    ],
+  },
+
+  {
+    id: 'prod',
+    active: false,
+    pilot: false,
+    color: '#4CAF82',
+    icon: '🐟',
+    num: '02',
+    name: 'PRODUCCIÓN',
+    sub: 'Biomasa · FCR · Mortalidad',
+    projection: 'Activación planificada: Semana 3–4 · FCR y biomasa en tiempo real',
+    profiles: [
+      { name: 'Gerente Técnico', tool: 'claude' },
+      { name: 'Jefa de Calidad', tool: 'gemini' },
+    ],
+    bullets: [
+      'Ingreso smolt y asignación de centro',
+      'Ciclo engorda 12–18 meses',
+      'Estimación semanal de biomasa',
+      'FCR y mortalidad por período',
+    ],
+    pain: 'Biomasa real llega al CEO con 2–3 días de retraso por consolidación manual de planillas.',
+    detail: [
+      {
+        label: 'Proceso hoy',
+        items: [
+          'Informes semanales PDF por centro',
+          'Consolidación manual en planilla',
+          'Cálculo FCR y mortalidad a mano',
+          'Reporte CEO con días de retraso',
+        ]
+      },
+      {
+        label: 'KPIs objetivo',
+        items: [
+          'Biomasa total: 2,847 ton referencial',
+          'FCR promedio flota: 1.28',
+          'Mortalidad acumulada: 4.2%',
+          'Alimentación kg entregada / centro',
+        ]
+      },
+      {
+        label: 'Candidato IA — Fase 2',
+        items: [
+          'Extracción PDF de centros (Claude)',
+          'Alertas FCR sobre umbral 1.35 (Claude)',
+          'Consolidación multi-centro (Sheets)',
+          'Dashboard producción tiempo real CEO',
+        ]
+      },
+    ],
+  },
+
+  {
+    id: 'san',
+    active: false,
+    pilot: false,
+    color: '#E05252',
+    icon: '🩺',
+    num: '03',
+    name: 'SANIDAD',
+    sub: 'Tratamientos · ISA · SMA',
+    projection: 'Activación planificada: Semana 5–6 · Alertas automáticas de eventos críticos',
+    profiles: [
+      { name: 'Gerente Técnico', tool: 'claude' },
+      { name: 'Encargado Lab.', tool: 'gemini' },
+      { name: 'Jefa de Calidad', tool: 'gemini' },
+    ],
+    bullets: [
+      'Tratamientos y medicamentos por centro',
+      'Eventos sanitarios y alertas ISA',
+      'Notificación Sernapesca en plazo',
+      'Coordinación con veterinarios externos',
+    ],
+    pain: 'El CEO se entera de eventos sanitarios críticos por llamado telefónico, sin sistema automático.',
+    detail: [
+      {
+        label: 'Proceso hoy',
+        items: [
+          'Reporte diario WhatsApp desde centro',
+          'Sin consolidación multi-centro',
+          'Notificaciones Sernapesca manual',
+          'Sin alertas automáticas por umbral',
+        ]
+      },
+      {
+        label: 'KPIs objetivo',
+        items: [
+          'Centros con alerta activa: ≤ 1',
+          'Días sin eventos por centro',
+          'Tratamientos activos en curso',
+          'Cumplimiento notificaciones en plazo',
+        ]
+      },
+      {
+        label: 'Candidato IA — Fase 3',
+        items: [
+          'Consolidación reportes sanitarios (Claude)',
+          'Alerta mortalidad sobre umbral 6%',
+          'Resumen ejecutivo diario (Claude)',
+          'Registro laboratorio automático (Sheets)',
+        ]
+      },
+    ],
+  },
+
+  {
+    id: 'rrhh',
+    active: false,
+    pilot: false,
+    color: '#E8A838',
+    icon: '👥',
+    num: '04',
+    name: 'RRHH',
+    sub: 'Personas · Turnos · Costos',
+    projection: 'Activación planificada: Semana 5–6 · Cruce HH extra vs ERP automatizado',
+    profiles: [
+      { name: 'CFO', tool: 'claude' },
+      { name: 'Control de Gestión', tool: 'claude' },
+    ],
+    bullets: [
+      'Control horas extra por centro',
+      'Turnos rotativos en centros',
+      'Cruce con ERP (SAP / Softland / Cona)',
+      'Dotación planificada vs real',
+    ],
+    pain: 'Listas de horas extra se cruzan manualmente con el ERP semana a semana. 3h de trabajo repetitivo.',
+    detail: [
+      {
+        label: 'Proceso hoy',
+        items: [
+          'Lista HH extra en Excel por supervisor',
+          'Cruce manual con RUT en ERP',
+          'Validación duplicados y errores',
+          'Envío a GAF para liquidación semanal',
+        ]
+      },
+      {
+        label: 'KPIs objetivo',
+        items: [
+          'HH extra por centro vs presupuesto',
+          'Dotación real vs planificada %',
+          'Costo RRHH por kg producido',
+          'Ausentismo y rotación por período',
+        ]
+      },
+      {
+        label: 'Candidato IA — Fase 3',
+        items: [
+          'Cruce lista HH extra × RUT (Claude)',
+          'Detección anomalías en turno',
+          'Resumen consolidado liquidaciones',
+          'Reporte dotación en Sheets automático',
+        ]
+      },
+    ],
+  },
+
+  {
+    id: 'gaf',
+    active: false,
+    pilot: false,
+    color: '#7AB3D4',
+    icon: '💰',
+    num: '05',
+    name: 'GAF — CONTROL',
+    sub: 'Finanzas · Presupuesto',
+    projection: 'Activación planificada: Semana 3–4 · KPIs financieros y dashboard CEO',
+    profiles: [
+      { name: 'CEO', tool: 'claude' },
+      { name: 'CFO', tool: 'claude' },
+      { name: 'Control de Gestión', tool: 'claude' },
+    ],
+    bullets: [
+      'Consolidación costos por centro',
+      'Control presupuesto vs real',
+      'Reportes de gestión directorio',
+      'Administración proveedores',
+    ],
+    pain: 'Consolidación manual de múltiples centros. Sin visibilidad en tiempo real para el CEO ni para Luis.',
+    detail: [
+      {
+        label: 'Proceso hoy',
+        items: [
+          'Solicitud datos a centros por email',
+          'Consolidación en planilla maestra',
+          'Cálculo KPIs a mano por Luis',
+          'Reporte directorio con 5–7 días retraso',
+        ]
+      },
+      {
+        label: 'KPIs objetivo',
+        items: [
+          'Costo por kg producido acumulado',
+          'Presupuesto vs real por área',
+          'Flujo de caja operacional',
+          'Tiempo de consolidación: horas → min',
+        ]
+      },
+      {
+        label: 'Candidato IA — Fase 2',
+        items: [
+          'Extracción datos PDF centros (Claude)',
+          'Análisis en Sheets con Gemini',
+          'Dashboard CEO en tiempo real',
+          'Reporte ROI automatizado desde S5',
+        ]
+      },
+    ],
+  },
+
+  {
+    id: 'log',
+    active: false,
+    pilot: false,
+    color: '#A78BFA',
+    icon: '🚢',
+    num: '06',
+    name: 'LOGÍSTICA',
+    sub: 'Cosecha · Proceso · Export.',
+    projection: 'Activación planificada: Semana 7+ · Pipeline cosecha completo y gap de contratos',
+    profiles: [
+      { name: 'Jefa de Logística', tool: 'gemini' },
+      { name: 'Jefe de Patio', tool: 'gemini' },
+      { name: 'Calidad Comercial', tool: 'gemini' },
+      { name: 'CEO', tool: 'claude' },
+    ],
+    bullets: [
+      'Programación cosechas por centro',
+      'Proceso en planta y despacho',
+      'Exportación con certificación',
+      'Contratos compradores internacionales',
+    ],
+    pain: 'Proyección cosecha vs contratos comprometidos se cruza manualmente. Sin visión de gap en tiempo real.',
+    detail: [
+      {
+        label: 'Proceso hoy',
+        items: [
+          'Programación cosecha en Excel',
+          'Cruce manual con contratos vigentes',
+          'Sin alerta automática de retraso',
+          'Coordinación por email con plantas',
+        ]
+      },
+      {
+        label: 'KPIs objetivo',
+        items: [
+          'Proyección cosecha 90 días',
+          'Contratos vs biomasa disponible',
+          'Precio FOB promedio por mercado',
+          'Centros con retraso de cosecha',
+        ]
+      },
+      {
+        label: 'Candidato IA — Fase 4',
+        items: [
+          'Gap contrato vs biomasa (Claude)',
+          'Guías despacho en Sheets (Gemini)',
+          'Alertas retraso en pipeline',
+          'Coordinación logística Gmail automatizada',
+        ]
+      },
+    ],
+  },
+
+];
+
+// ─── Hoja de Ruta — Fases del piloto ─────────────────────────
+const ROADMAP = [
+  {
+    phase: 1,
+    weeks: 'S1–S2',
+    title: 'Quick Win Trazabilidad',
+    status: 'en-curso',
+    statusLabel: 'EN CURSO',
+    modules: ['TRAZABILIDAD'],
+    moduleIds: ['traz'],
+    entregable: 'Pipeline PDF → Google Sheets automatizado',
+    ahorro: '4.5h / semana',
+    fecha: 'Entrega estimada: 18 Abr 2026',
+    descripcion: 'Claude extrae datos estructurados de PDFs enviados por los centros y los vuelca directo a Google Sheets. Elimina la compilación manual de trazabilidad lote a lote.',
+  },
+  {
+    phase: 2,
+    weeks: 'S3–S4',
+    title: 'Producción + GAF',
+    status: 'proximo',
+    statusLabel: 'PRÓXIMO',
+    modules: ['PRODUCCIÓN', 'GAF — CONTROL'],
+    moduleIds: ['prod', 'gaf'],
+    entregable: 'Dashboard biomasa + KPIs financieros por centro',
+    ahorro: '6h / semana',
+    fecha: 'Inicio estimado: 22 Abr 2026',
+    descripcion: 'Consolidación automática de reportes de producción (FCR 1.28, biomasa 2,847 ton, mortalidad 4.2%) y datos financieros GAF. Dashboard ejecutivo con semáforo para Javier y Luis.',
+  },
+  {
+    phase: 3,
+    weeks: 'S5–S6',
+    title: 'Sanidad + RRHH',
+    status: 'planificado',
+    statusLabel: 'PLANIFICADO',
+    modules: ['SANIDAD', 'RRHH'],
+    moduleIds: ['san', 'rrhh'],
+    entregable: 'Alertas sanitarias automáticas + cruce HH extra × ERP',
+    ahorro: '5h / semana',
+    fecha: 'Inicio estimado: 06 May 2026',
+    descripcion: 'El CEO recibe alertas automáticas ante eventos sanitarios críticos. Cruce de horas extra con RUT vs ERP sin intervención manual del área de RRHH.',
+  },
+  {
+    phase: 4,
+    weeks: 'S7+',
+    title: 'Logística + ROI Medido',
+    status: 'planificado',
+    statusLabel: 'FASE FINAL',
+    modules: ['LOGÍSTICA'],
+    moduleIds: ['log'],
+    entregable: 'Pipeline cosecha completo + reporte ROI documentado',
+    ahorro: '8h / semana acumuladas',
+    fecha: 'Inicio estimado: 20 May 2026',
+    descripcion: 'Pipeline logístico completo desde proyección de cosecha hasta contratos internacionales. Reporte de ROI acumulado del piloto con métricas reales medidas en fases anteriores.',
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
+//  PERFILES — Claude vs Gemini por rol
+// ─────────────────────────────────────────────────────────────
+const PROFILES = {
+  claude: [
+    {
+      icon: '👔', name: 'CEO', area: 'Dirección ejecutiva',
+      uses: ['Síntesis de reportes', 'Decisiones estratégicas', 'Análisis de escenarios', 'Dashboard ejecutivo']
+    },
+    {
+      icon: '💼', name: 'CFO', area: 'Gerencia de Finanzas — GAF',
+      uses: ['Control presupuesto', 'Análisis de costos', 'Reportes directorio', 'Alertas financieras']
+    },
+    {
+      icon: '📊', name: 'Control de Gestión', area: 'Administración y Finanzas — GAF',
+      uses: ['Consolidación de datos', 'KPIs por área', 'Reportes de gestión', 'Análisis presupuestario']
+    },
+    {
+      icon: '🔗', name: 'Trazabilidad', area: 'Operaciones / Calidad',
+      uses: ['Compilación PDFs centros', 'Seguimiento lote a lote', 'Reportes Sernapesca', 'Auditorías de cumplimiento']
+    },
+    {
+      icon: '🔬', name: 'Gerente Técnico', area: 'Producción / Sanidad',
+      uses: ['Análisis técnico producción', 'FCR y mortalidad', 'Protocolos sanitarios', 'Alertas de centro']
+    },
+  ],
+  gemini: [
+    {
+      icon: '✅', name: 'Jefa de Calidad', area: 'Calidad operacional',
+      uses: ['Registros en Sheets', 'Documentación Drive', 'Seguimiento en Gmail', 'Reportes calidad']
+    },
+    {
+      icon: '📦', name: 'Calidad Comercial', area: 'Calidad / Comercial',
+      uses: ['Certificados en Drive', 'Comunicación clientes', 'Registros exportación', 'Docs de calidad']
+    },
+    {
+      icon: '🧪', name: 'Encargado de Laboratorio', area: 'Laboratorio / Sanidad',
+      uses: ['Resultados en Sheets', 'Alertas por Gmail', 'Fichas en Docs', 'Trazabilidad muestras']
+    },
+    {
+      icon: '🚚', name: 'Jefa de Logística', area: 'Logística / Despacho',
+      uses: ['Guías despacho Sheets', 'Coordinación Gmail', 'Programación cosecha', 'Pipeline exportación']
+    },
+    {
+      icon: '🏗️', name: 'Jefe de Patio', area: 'Operaciones / Centros',
+      uses: ['Registros diarios Sheets', 'Reportes turno Docs', 'Comunicación Gmail', 'Control inventario']
+    },
+  ]
+};
+
+// ════════════════════════════════════════════════════════════
+//  app.js — lógica de la aplicación
+// ════════════════════════════════════════════════════════════
+
+function init() {
+  buildBanner();
+  buildStrip();
+  buildSemaforoGrid();
+  buildProfilesView();
+  buildKpiFullView();
+  buildRoadmapView();
+  setupScroll();
+
+  setView('mapa');
+  setTimeout(() => toggleDetail('traz'), 700);
+}
+
+function buildBanner() {
+  const container = document.getElementById('execBanner');
+  BANNER_METRICS.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'banner-metric';
+    el.style.setProperty('--metric-color', m.color);
+    el.innerHTML = `
+      <div class="bm-icon">${m.icon}</div>
+      <div class="bm-body">
+        <div class="bm-label">${m.label}</div>
+        <div class="bm-val-row">
+          <span class="bm-val" style="color:${m.color}">${m.val}</span>
+          <span class="bm-suffix">${m.suffix}</span>
+        </div>
+        <div class="bm-note">${m.note}</div>
+      </div>
+    `;
+    container.appendChild(el);
+  });
+}
+
+function buildStrip() {
+  const strip = document.getElementById('strip');
+  AREAS.forEach(a => {
+    const kpis = KPIS_DATA[a.id] || [];
+    const card = document.createElement('div');
+    card.className = `mod-card${a.active ? '' : ' inactive'}`;
+    card.id = `card-${a.id}`;
+
+    const profileChips = a.profiles.map(p =>
+      `<div class="profile-chip ${p.tool}"><div class="chip-dot"></div>${p.name}</div>`
+    ).join('');
+
+    const bulletHtml = a.bullets.map(b =>
+      `<li>
+        <span style="width:4px;height:4px;border-radius:50%;background:${a.color};display:inline-block;flex-shrink:0;margin-top:5px"></span>
+        <span style="color:${a.active ? '#cde' : 'var(--silver)'}">${b}</span>
+      </li>`
+    ).join('');
+
+    const pilotHtml = a.pilot
+      ? `<div class="pilot-badge active-pulse">⚡ QUICK WIN #1 — EN CURSO · S1</div>`
+      : '';
+
+    const painHtml = a.active
+      ? `<div class="pain-tag"><span style="color:#e05252;flex-shrink:0">⚠</span><span>${a.pain}</span></div>`
+      : '';
+
+    const projectionHtml = (!a.active && a.projection)
+      ? `<div class="mod-projection"><span style="flex-shrink:0;color:rgba(82,177,200,.5)">🗓</span><span>${a.projection}</span></div>`
+      : '';
+
+    card.innerHTML = `
+      <div class="mod-top-bar" style="background:${a.color};opacity:${a.active ? .9 : .25}"></div>
+      <div class="mod-head-row">
+        <div class="mod-icon-wrap" style="border-color:${a.color};color:${a.color};background:${a.color}18">${a.icon}</div>
+        <div>
+          <div class="mod-num" style="color:${a.color}">${a.num}</div>
+          <div class="mod-name" style="color:${a.color}">${a.name}</div>
+          <div class="mod-sub">${a.sub}</div>
+        </div>
+      </div>
+      ${pilotHtml}
+      <div class="mod-profiles">${profileChips}</div>
+      <ul class="mod-bullets" style="margin-top:8px">${bulletHtml}</ul>
+      ${painHtml}
+      ${projectionHtml}
+    `;
+
+    if (a.active) {
+      card.style.borderColor = `${a.color}30`;
+      card.addEventListener('click', () => toggleDetail(a.id));
+    }
+    strip.appendChild(card);
+  });
+}
+
+function buildSemaforoGrid() {
+  const grid = document.getElementById('semaforoGrid');
+
+  AREAS.forEach(a => {
+    const kpis = KPIS_DATA[a.id] || [];
+
+    if (a.active && kpis.length) {
+      kpis.forEach(k => {
+        const card = document.createElement('div');
+        card.className = 'kpi-card';
+        card.style.borderColor = `${k.color}22`;
+        const slClass = k.semaforo || 'neutral';
+        const slLabel = { green: 'OK', yellow: 'ATENCIÓN', red: 'ALERTA', neutral: '' }[slClass] || '';
+        card.innerHTML = `
+          <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${k.color};border-radius:9px 9px 0 0"></div>
+          <div class="semaforo-wrap">
+            <div class="semaforo-dot ${slClass}"></div>
+            <span class="semaforo-label ${slClass}">${slLabel}</span>
+          </div>
+          <div style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:${a.color};margin-bottom:3px">${a.icon} ${a.name}</div>
+          <div class="k-lbl">${k.label}</div>
+          <div class="k-val" style="color:${k.color}">${k.val}</div>
+          <div class="k-unit">${k.unit}</div>
+          ${k.delta ? `<div class="k-delta ${k.cls}">${k.delta}</div>` : ''}
+          ${k.umbral ? `<div class="k-umbral">${k.umbral}</div>` : ''}
+        `;
+        grid.appendChild(card);
+      });
+    } else {
+      const lock = document.createElement('div');
+      lock.className = 'kpi-locked';
+      lock.style.cssText = 'display:flex;flex-direction:column;gap:3px;';
+      const proj = a.projection ? a.projection.split('·')[0].trim() : 'Pendiente activación';
+      lock.innerHTML = `<span style="font-size:9px;color:${a.color}">${a.icon} ${a.name}</span><span>${proj}</span>`;
+      grid.appendChild(lock);
+    }
+  });
+}
+
+function toggleSemaforo() {
+  const content = document.getElementById('semaforoContent');
+  const arrow   = document.getElementById('semaforoArrow');
+  const strip   = document.getElementById('strip');
+  const opening = content.style.display === 'none';
+
+  if (opening) {
+    closeDetail();
+    content.style.display = 'block';
+    const semaforoH = document.getElementById('semaforoContent').scrollHeight;
+    strip.style.maxHeight = 'calc(100vh - ' + (semaforoH + 220) + 'px)';
+  } else {
+    content.style.display = 'none';
+    strip.style.maxHeight = '';
+  }
+
+  arrow.textContent = opening ? 'Ocultar ↑' : 'Ver resumen →';
+  arrow.style.color = opening ? 'var(--teal)' : 'var(--silver)';
+}
+
+function buildProfilesView() {
+  const grid = document.getElementById('profilesGrid');
+
+  ['claude', 'gemini'].forEach(tool => {
+    const data = PROFILES[tool];
+    const color = tool === 'claude' ? 'var(--claude)' : 'var(--gemini)';
+    const toolLabel = tool === 'claude' ? 'Claude' : 'Gemini + Workspace';
+    const toolDesc = tool === 'claude'
+      ? 'Análisis, síntesis y decisión — documentos complejos, razonamiento ejecutivo'
+      : 'Automatización en flujo diario — Gmail, Sheets, Drive, Docs';
+    const toolIcon = tool === 'claude' ? '🤖' : '✨';
+
+    const section = document.createElement('div');
+    section.className = 'tool-section';
+    section.innerHTML = `
+      <div class="tool-header">
+        <div class="tool-icon">${toolIcon}</div>
+        <div>
+          <div class="tool-title" style="color:${color}">${toolLabel}</div>
+          <div class="tool-desc">${toolDesc}</div>
+        </div>
+      </div>
+    `;
+
+    data.forEach(p => {
+      const row = document.createElement('div');
+      row.className = `profile-row ${tool}-row`;
+      row.innerHTML = `
+        <div class="profile-avatar">${p.icon}</div>
+        <div class="profile-info">
+          <div class="profile-name">${p.name}</div>
+          <div class="profile-area">${p.area}</div>
+          <div class="profile-uses">
+            ${p.uses.map(u => `<span class="use-tag">${u}</span>`).join('')}
+          </div>
+        </div>
+      `;
+      section.appendChild(row);
+    });
+
+    grid.appendChild(section);
+  });
+}
+
+function buildKpiFullView() {
+  const grid = document.getElementById('kpisFullGrid');
+
+  AREAS.forEach(a => {
+    const kpis = KPIS_DATA[a.id] || [];
+
+    const header = document.createElement('div');
+    header.className = 'kpi-area-header';
+    header.innerHTML = `
+      <span class="kpi-area-header-icon">${a.icon}</span>
+      <span class="kpi-area-header-name" style="color:${a.color}">${a.name}</span>
+      <span class="kpi-area-header-sub">${a.sub}</span>
+    `;
+    grid.appendChild(header);
+
+    kpis.forEach(k => {
+      const card = document.createElement('div');
+      card.className = `kpi-card${a.active ? '' : ' inactive'}`;
+      card.style.borderColor = `${k.color}22`;
+      const slClass = k.semaforo || 'neutral';
+      const slLabel = { green: 'OK', yellow: 'ATENCIÓN', red: 'ALERTA', neutral: '—' }[slClass] || '—';
+
+      card.innerHTML = `
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${k.color};border-radius:9px 9px 0 0"></div>
+        <div class="semaforo-wrap">
+          <div class="semaforo-dot ${slClass}"></div>
+          <span class="semaforo-label ${slClass}">${slLabel}</span>
+        </div>
+        <div class="k-lbl">${k.label}</div>
+        <div class="k-val" style="color:${k.color}">${k.val}</div>
+        <div class="k-unit">${k.unit}</div>
+        ${k.delta ? `<div class="k-delta ${k.cls}">${k.delta}</div>` : ''}
+        ${k.umbral ? `<div class="k-umbral">${k.umbral}</div>` : ''}
+      `;
+      grid.appendChild(card);
+    });
+  });
+}
+
+function buildRoadmapView() {
+  const container = document.getElementById('roadmapTimeline');
+
+  const phaseColors = {
+    'en-curso':   '#52B1C8',
+    'proximo':    '#E8A838',
+    'planificado':'#7AB3D4',
+    'completado': '#4CAF82',
+  };
+
+  ROADMAP.forEach((phase, idx) => {
+    const color = phaseColors[phase.status] || '#52B1C8';
+
+    const moduleTagsHtml = phase.modules.map((m, i) => {
+      const area = AREAS.find(a => a.id === phase.moduleIds[i]);
+      const mc = area ? area.color : '#52B1C8';
+      const icon = area ? area.icon : '📦';
+      return `<span class="phase-module-tag" style="border-color:${mc}30;color:${mc};background:${mc}10">${icon} ${m}</span>`;
+    }).join('');
+
+    const phaseEl = document.createElement('div');
+    phaseEl.className = 'roadmap-phase';
+    phaseEl.style.setProperty('--phase-color', color);
+
+    phaseEl.innerHTML = `
+      <div class="phase-spine">
+        <div class="phase-num-circle" style="border-color:${color};color:${color};background:${color}15">
+          ${phase.phase}
+        </div>
+        <div class="phase-weeks">${phase.weeks}</div>
+      </div>
+      <div class="phase-body" style="border-color:${color}25">
+        <div class="phase-card" style="border-color:${color}20">
+          <div class="phase-card-top">
+            <div class="phase-status-row">
+              <div class="phase-badge ${phase.status}">
+                <div class="phase-badge-dot"></div>
+                ${phase.statusLabel}
+              </div>
+              <span class="phase-fecha">${phase.fecha}</span>
+            </div>
+            <div class="phase-title" style="color:${color}">${phase.title}</div>
+            <div class="phase-desc">${phase.descripcion}</div>
+            <div class="phase-modules-row">${moduleTagsHtml}</div>
+          </div>
+          <div class="phase-metrics">
+            <div class="phase-metric">
+              <div class="pm-label">Entregable clave</div>
+              <div class="pm-val" style="color:${color};font-size:11px;line-height:1.3">${phase.entregable}</div>
+            </div>
+            <div class="phase-metric">
+              <div class="pm-label">Ahorro estimado</div>
+              <div class="pm-val" style="color:${color}">${phase.ahorro}</div>
+              <div class="pm-sub">horas recuperadas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(phaseEl);
+  });
+}
+
+function setView(name) {
+  const views = { mapa: 'view-mapa', perfiles: 'view-perfiles', kpis: 'view-kpis', ruta: 'view-ruta' };
+
+  Object.entries(views).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (key === name) {
+      el.style.display = key === 'mapa' ? 'flex' : 'block';
+      if (key === 'mapa') { el.style.flexDirection = 'column'; el.style.width = '100%'; }
+    } else {
+      el.style.display = 'none';
+    }
+  });
+
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  const activeTab = document.querySelector(`.view-tab[data-view="${name}"]`);
+  if (activeTab) activeTab.classList.add('active');
+
+  if (name !== 'mapa') closeDetail();
+}
+
+let detailOpen = null;
+
+function toggleDetail(id) {
+  if (detailOpen === id) { closeDetail(); return; }
+
+  const sc = document.getElementById('semaforoContent');
+  const sa = document.getElementById('semaforoArrow');
+  if (sc && sc.style.display !== 'none') {
+    sc.style.display  = 'none';
+    sa.textContent    = 'Ver resumen →';
+    sa.style.color    = 'var(--silver)';
+  }
+
+  detailOpen = id;
+  const area = AREAS.find(a => a.id === id);
+  const kpis = KPIS_DATA[id] || [];
+  const inner = document.getElementById('detailInner');
+
+  const profileChipsHtml = area.profiles.map(p =>
+    `<div class="profile-chip ${p.tool}"><div class="chip-dot"></div>${p.name}</div>`
+  ).join('');
+
+  const titleCol = `
+    <div class="detail-col">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;border:2px solid ${area.color};background:${area.color}18">${area.icon}</div>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:${area.color}">${area.name}</div>
+          <div style="font-size:9px;color:var(--silver)">${area.sub}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${profileChipsHtml}</div>
+      <div style="background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.2);border-radius:7px;padding:9px 11px;font-size:10px;color:#e8a0a0;line-height:1.5">
+        <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#e05252;display:block;margin-bottom:3px">⚠ Dolor actual</span>
+        ${area.pain}
+      </div>
+    </div>`;
+
+  const dataCols = area.detail.map(col => `
+    <div class="detail-col">
+      <h4 style="color:${area.color}">${col.label}</h4>
+      <ul>${col.items.map(i => `<li>${i}</li>`).join('')}</ul>
+    </div>`).join('');
+
+  document.getElementById('detailHeader').innerHTML = `
+    <div class="detail-header-left">
+      <div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid ${area.color};background:${area.color}15">${area.icon}</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:${area.color}">${area.name}</div>
+        <div style="font-size:9px;color:var(--silver)">${area.sub}</div>
+      </div>
+    </div>
+    <button class="detail-close" onclick="closeDetail()">Cerrar ✕</button>
+  `;
+
+  inner.innerHTML = dataCols;
+  document.getElementById('areaDetail').classList.add('open');
+  document.querySelectorAll('.mod-card').forEach(c => c.classList.remove('selected'));
+  const cardEl = document.getElementById(`card-${id}`);
+  if (cardEl) cardEl.classList.add('selected');
+}
+
+function closeDetail() {
+  document.getElementById('areaDetail').classList.remove('open');
+  document.querySelectorAll('.mod-card').forEach(c => c.classList.remove('selected'));
+  detailOpen = null;
+}
+
+function setupScroll() {
+  const strip = document.getElementById('strip');
+  if (!strip) return;
+  strip.addEventListener('scroll', updateScrollUI);
+  updateScrollUI();
+}
+
+function updateScrollUI() {
+  const strip = document.getElementById('strip');
+  if (!strip) return;
+  const { scrollLeft, scrollWidth, clientWidth } = strip;
+  document.getElementById('btnL').classList.toggle('hidden', scrollLeft < 10);
+  document.getElementById('btnR').classList.toggle('hidden', scrollLeft + clientWidth >= scrollWidth - 10);
+  const pct = scrollWidth > clientWidth ? scrollLeft / (scrollWidth - clientWidth) : 0;
+  const tw = Math.max(10, clientWidth / scrollWidth * 100);
+  const tl = pct * (100 - tw);
+  const t = document.getElementById('scrollThumb');
+  if (t) { t.style.width = tw + '%'; t.style.marginLeft = tl + '%'; }
+}
+
+function scrollStrip(dir) {
+  const strip = document.getElementById('strip');
+  if (strip) strip.scrollBy({ left: dir * 280, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
