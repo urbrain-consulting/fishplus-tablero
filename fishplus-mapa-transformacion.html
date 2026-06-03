@@ -240,6 +240,13 @@
 
   .fbrand { font-size:11px; color:var(--silver); letter-spacing:0.8px; line-height:1.6; }
   .fbrand strong { color:var(--teal); font-weight:700; font-size:12px; }
+
+  @media (max-width: 640px) {
+    .meta { text-align:left; }
+    .header-top { flex-direction:column; gap:14px; }
+    .fbrand { text-align:left; }
+    .bottom { flex-direction:column; align-items:flex-start; }
+  }
 </style>
 </head>
 <body>
